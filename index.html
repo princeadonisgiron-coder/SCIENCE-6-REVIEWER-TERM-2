@@ -1,0 +1,3021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SciReview: Machines &amp; Waves | Interactive DepEd Science Reviewer</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            tealBrand: '#0d9488',
+            emeraldBrand: '#059669',
+            oceanBrand: '#0284c7',
+            amberBrand: '#d97706',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom micro-animations & polish */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.35); }
+      50% { box-shadow: 0 0 0 8px rgba(13, 148, 136, 0); }
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-float-slow {
+      animation: floatSlow 3.5s ease-in-out infinite;
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 2.4s infinite;
+    }
+    .tab-panel {
+      animation: fadeSlideIn 0.25s ease-out;
+    }
+    /* Hide scrollbar on horizontal tab bar while preserving touch scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Custom range slider styling */
+    input[type="range"] {
+      accent-color: #0d9488;
+      cursor: pointer;
+    }
+    /* Full-screen confetti overlay canvas */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-teal-100 selection:text-teal-900 overflow-x-hidden">
+
+  <!-- Celebratory Confetti Overlay -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Toast Notification Banner (Replaces alert/confirm) -->
+  <div id="toastBanner" class="fixed bottom-4 right-4 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 transition-all">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <p id="toastMessage" class="text-xs sm:text-sm font-medium"></p>
+  </div>
+
+  <!-- ULTRA-SLIM STICKY TOP HEADER (~48px height) -->
+  <header class="sticky top-0 z-40 h-12 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-7xl mx-auto h-full px-2 sm:px-4 flex items-center justify-between gap-2">
+      <!-- Brand Identity -->
+      <button onclick="switchTab(0)" class="flex items-center gap-2 shrink-0 text-left group focus:outline-none">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-600 via-emerald-600 to-sky-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-atom text-xs"></i>
+        </div>
+        <span class="font-extrabold text-xs sm:text-sm tracking-tight bg-gradient-to-r from-teal-700 to-sky-700 bg-clip-text text-transparent">
+          SciReview<span class="hidden md:inline">: Machines &amp; Waves</span>
+        </span>
+      </button>
+
+      <!-- Compact Navigation Tabs -->
+      <nav aria-label="Module Navigation" class="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+        <button id="nav-tab-0" onclick="switchTab(0)" class="nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-compass"></i>
+          <span>Overview</span>
+        </button>
+        <button id="nav-tab-1" onclick="switchTab(1)" class="nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-gears"></i>
+          <span>1. Simple Machines</span>
+        </button>
+        <button id="nav-tab-2" onclick="switchTab(2)" class="nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-water"></i>
+          <span>2. Water &amp; Sound Waves</span>
+        </button>
+        <button id="nav-tab-3" onclick="switchTab(3)" class="nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-wave-square"></i>
+          <span>3. Longitudinal &amp; Transverse</span>
+        </button>
+        <button id="nav-tab-4" onclick="switchTab(4)" class="nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-award"></i>
+          <span>Final Mock Exam</span>
+        </button>
+      </nav>
+
+      <!-- Live Mastery Score Pill -->
+      <div class="shrink-0 flex items-center gap-1.5 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
+        <i class="fa-solid fa-star text-amber-500 text-[11px]"></i>
+        <span class="text-[11px] font-bold text-teal-800" id="headerMasteryPill">0% Mastery</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-7 space-y-6">
+
+    <!-- =================================================================== -->
+    <!-- TAB 0: OVERVIEW DASHBOARD                                           -->
+    <!-- =================================================================== -->
+    <section id="panel-0" class="tab-panel space-y-6">
+      <!-- Hero Banner -->
+      <div class="bg-gradient-to-br from-teal-700 via-emerald-700 to-sky-800 rounded-2xl p-5 sm:p-8 text-white shadow-md relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-52 h-52 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute right-12 bottom-2 text-white/10 text-7xl sm:text-8xl pointer-events-none animate-float-slow">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="space-y-2.5 max-w-2xl">
+            <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs px-3 py-1 rounded-full text-xs font-semibold text-teal-50 border border-white/20">
+              <i class="fa-solid fa-graduation-cap text-amber-300"></i>
+              <span>DepEd Science Interactive Reviewer &amp; Virtual Lab</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+              Master Simple Machines &amp; Wave Physics
+            </h1>
+            <p class="text-sm sm:text-base text-teal-50/90 leading-relaxed">
+              Explore real-world tools at home, school, and in the community; run fair tests on levers; simulate water ripples and sound waves; and compare longitudinal vs. transverse waves with 40 practice quiz items.
+            </p>
+            <div class="pt-1 flex flex-wrap gap-2.5">
+              <button onclick="switchTab(1)" class="px-4 py-2 rounded-xl bg-white text-teal-800 font-bold text-xs sm:text-sm shadow-sm hover:bg-teal-50 transition flex items-center gap-2">
+                <span>Start Module 1</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+              <button onclick="switchTab(4)" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-sm transition flex items-center gap-2">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Take 30-Item Mock Exam</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Overall Progress Ring Card -->
+          <div class="bg-white/12 backdrop-blur-md border border-white/20 rounded-2xl p-4 sm:p-5 flex items-center gap-4 shrink-0">
+            <div class="relative w-20 h-20 flex items-center justify-center">
+              <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.2)" stroke-width="8" fill="none" />
+                <circle id="overviewProgressCircle" cx="40" cy="40" r="32" stroke="#fbbf24" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="201.06" stroke-dashoffset="201.06" class="transition-all duration-700" />
+              </svg>
+              <span id="overviewProgressPercent" class="absolute text-base font-extrabold text-white">0%</span>
+            </div>
+            <div class="space-y-1">
+              <p class="text-xs uppercase tracking-wider font-bold text-teal-100">Overall Mastery</p>
+              <p id="overviewStatsText" class="text-sm font-semibold text-white">0 / 30 Topic Questions</p>
+              <p id="overviewChecklistText" class="text-xs text-teal-100">0 / 8 Competencies Checked</p>
+              <div class="pt-1">
+                <button id="resetRequestBtn" onclick="toggleResetConfirm(true)" class="text-[11px] font-semibold text-amber-200 hover:text-white underline underline-offset-2">
+                  Reset All Progress
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline Safe Reset Confirmation Bar (Replaces confirm()) -->
+        <div id="resetConfirmBar" class="hidden relative z-10 mt-4 bg-slate-900/90 border border-amber-400/50 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-xs sm:text-sm text-amber-100">
+            <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+            <span>Clear all saved quiz scores, competency checkboxes, and mock exam results?</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="executeProgressReset()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold">
+              Yes, Reset Progress
+            </button>
+            <button onclick="toggleResetConfirm(false)" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Jump Module Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-gears"></i>
+              </span>
+              <span id="dash-badge-t1" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">0/10 Quiz</span>
+            </div>
+            <h2 class="font-bold text-base text-slate-900">1. Simple Machines</h2>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              6 classical simple machines at home, school &amp; community, advantages/limitations, and Interactive Lever Fair Test Lab.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="dash-bar-t1" class="h-full bg-teal-600 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <button onclick="switchTab(1)" class="w-full py-2 rounded-xl bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <span>Open Reviewer &amp; Lab</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-water"></i>
+              </span>
+              <span id="dash-badge-t2" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">0/10 Quiz</span>
+            </div>
+            <h2 class="font-bold text-base text-slate-900">2. Water &amp; Sound Waves</h2>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Weeks 8–10: Energy transfer, Virtual Ripple Tank (reflection &amp; bending), crest/trough, and $v = f \times \lambda$ calculator.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="dash-bar-t2" class="h-full bg-sky-600 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <button onclick="switchTab(2)" class="w-full py-2 rounded-xl bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <span>Open Reviewer &amp; Lab</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-wave-square"></i>
+              </span>
+              <span id="dash-badge-t3" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">0/10 Quiz</span>
+            </div>
+            <h2 class="font-bold text-base text-slate-900">3. Longitudinal &amp; Transverse</h2>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Week 11: Dual Slinky &amp; Rope Motion Simulator, compressions vs. crests, similarities/differences, and Wave Sorter.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="dash-bar-t3" class="h-full bg-emerald-600 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <button onclick="switchTab(3)" class="w-full py-2 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <span>Open Reviewer &amp; Lab</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 4: Mock Exam -->
+        <div class="bg-white rounded-2xl p-5 border border-amber-200/90 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-award"></i>
+              </span>
+              <span id="dash-badge-mock" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">0/30 Exam</span>
+            </div>
+            <h2 class="font-bold text-base text-slate-900">Final Mock Exam</h2>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              30-item comprehensive assessment combining all three modules with topic filters and mastery certificate scorecard.
+            </p>
+          </div>
+          <div class="space-y-2">
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div id="dash-bar-mock" class="h-full bg-amber-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <button onclick="switchTab(4)" class="w-full py-2 rounded-xl bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5">
+              <span>Launch Mock Exam</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DepEd Learning Competencies Interactive Checklist -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-teal-600"></i>
+              <span>DepEd Learning Competencies Mastery Checklist</span>
+            </h2>
+            <p class="text-xs text-slate-500">Check off each learning competency as you review the concepts and complete the lab activities.</p>
+          </div>
+          <span id="checklistProgressPill" class="self-start sm:self-auto px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+            0 of 8 Completed
+          </span>
+        </div>
+
+        <div id="competencyChecklistContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: SIMPLE MACHINES                                              -->
+    <!-- =================================================================== -->
+    <section id="panel-1" class="tab-panel hidden space-y-6">
+      <!-- Learning Competencies Banner -->
+      <div class="bg-gradient-to-r from-teal-700 to-emerald-700 rounded-2xl p-5 text-white shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wide uppercase">
+            Module 1 • Simple Machines
+          </span>
+          <span class="text-xs text-teal-100 font-medium">3 Core Competencies</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold">Simple Machines: Uses, Advantages, Limitations &amp; Lever Fair Tests</h1>
+        <ul class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs text-teal-50">
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Observe and describe examples and uses of simple machines found at home, at school, and in the community.</span>
+          </li>
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Demonstrate through guided investigation the advantages and limitations of inclined planes, wedges, levers, and pulleys.</span>
+          </li>
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Carry out fair tests to show how levers can be used to change the magnitude and direction of a force.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Visual Showcase Card with Discreet Custom Photo Upload -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-shapes text-teal-600"></i>
+              <span>Visual Overview: How Simple Machines Help Us Do Work</span>
+            </h2>
+            <p class="text-xs text-slate-500">A simple machine is a mechanical device with few or no moving parts that changes the magnitude or direction of a force.</p>
+          </div>
+          <!-- Discreet Custom Image Upload Button -->
+          <div>
+            <input type="file" id="upload-topic-1" accept="image/*" class="hidden" onchange="handleCustomPhotoUpload(event, 1)" />
+            <button onclick="document.getElementById('upload-topic-1').click()" title="Upload your own classroom photo of simple machines" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-600 hover:text-teal-700 border border-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-camera"></i>
+              <span class="hidden sm:inline">Upload Photo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          <!-- Built-in SVG Overview Diagram -->
+          <div id="showcase-svg-1" class="lg:col-span-12 bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+            <svg viewBox="0 0 820 135" class="w-full h-auto" role="img" aria-label="6 Classical Simple Machines Overview Diagram">
+              <!-- Lever -->
+              <g transform="translate(15,10)">
+                <rect x="0" y="0" width="120" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <polygon points="60,72 48,92 72,92" fill="#0d9488" />
+                <line x1="20" y1="62" x2="100" y2="78" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+                <rect x="20" y="45" width="18" height="16" rx="3" fill="#d97706" />
+                <path d="M98,52 L98,70 M93,65 L98,71 L103,65" stroke="#0284c7" stroke-width="2.5" fill="none" />
+                <text x="60" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">1. Lever</text>
+              </g>
+              <!-- Inclined Plane -->
+              <g transform="translate(148,10)">
+                <rect x="0" y="0" width="120" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <polygon points="18,90 102,90 102,42" fill="#ccfbf1" stroke="#0d9488" stroke-width="2" />
+                <rect x="52" y="53" width="18" height="14" rx="2" transform="rotate(-30 60 60)" fill="#d97706" />
+                <text x="60" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">2. Inclined Plane</text>
+              </g>
+              <!-- Wedge -->
+              <g transform="translate(281,10)">
+                <rect x="0" y="0" width="120" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <polygon points="44,30 76,30 60,86" fill="#fde68a" stroke="#d97706" stroke-width="2" />
+                <path d="M60,14 L60,26 M55,21 L60,27 L65,21" stroke="#0284c7" stroke-width="2.5" fill="none" />
+                <path d="M44,64 L28,64 M76,64 L92,64" stroke="#059669" stroke-width="2.5" />
+                <text x="60" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">3. Wedge</text>
+              </g>
+              <!-- Screw -->
+              <g transform="translate(414,10)">
+                <rect x="0" y="0" width="120" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <rect x="42" y="24" width="36" height="10" rx="3" fill="#475569" />
+                <rect x="53" y="34" width="14" height="52" rx="2" fill="#94a3b8" />
+                <path d="M50,42 L70,48 M50,53 L70,59 M50,64 L70,70 M50,75 L70,81" stroke="#0284c7" stroke-width="2.5" />
+                <text x="60" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">4. Screw</text>
+              </g>
+              <!-- Wheel & Axle -->
+              <g transform="translate(547,10)">
+                <rect x="0" y="0" width="120" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <circle cx="60" cy="56" r="28" fill="#e0f2fe" stroke="#0284c7" stroke-width="4" />
+                <circle cx="60" cy="56" r="9" fill="#0d9488" />
+                <line x1="60" y1="28" x2="60" y2="84" stroke="#0284c7" stroke-width="2" />
+                <line x1="32" y1="56" x2="88" y2="56" stroke="#0284c7" stroke-width="2" />
+                <text x="60" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">5. Wheel &amp; Axle</text>
+              </g>
+              <!-- Pulley -->
+              <g transform="translate(680,10)">
+                <rect x="0" y="0" width="125" height="115" rx="12" fill="#ffffff" stroke="#cbd5e1" />
+                <line x1="42" y1="20" x2="82" y2="20" stroke="#334155" stroke-width="4" />
+                <line x1="62" y1="20" x2="62" y2="42" stroke="#334155" stroke-width="2.5" />
+                <circle cx="62" cy="44" r="14" fill="#ecfdf5" stroke="#059669" stroke-width="3" />
+                <line x1="48" y1="44" x2="48" y2="76" stroke="#475569" stroke-width="2" />
+                <line x1="76" y1="44" x2="76" y2="82" stroke="#475569" stroke-width="2" />
+                <rect x="40" y="75" width="16" height="14" rx="2" fill="#d97706" />
+                <text x="62" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">6. Pulley</text>
+              </g>
+            </svg>
+          </div>
+          <!-- Optional Custom Photo Preview Slot -->
+          <div id="custom-photo-slot-1" class="hidden lg:col-span-5 bg-slate-50 rounded-xl p-3 border border-teal-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-teal-800"><i class="fa-solid fa-image mr-1"></i>Uploaded Classroom Photo</span>
+              <button onclick="removeCustomPhoto(1)" class="text-xs text-rose-600 hover:underline font-semibold">Remove</button>
+            </div>
+            <img id="custom-photo-img-1" alt="Uploaded simple machines photo" class="w-full h-36 object-cover rounded-lg border border-slate-200" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1A: 6 CLASSICAL SIMPLE MACHINES & ENVIRONMENT EXPLORER -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Section 1A</span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">The 6 Simple Machines: Home, School &amp; Community Explorer</h2>
+            <p class="text-xs sm:text-sm text-slate-600">Filter by environment to see where each simple machine is used in everyday life.</p>
+          </div>
+          <!-- Environment Filter Buttons -->
+          <div class="flex flex-wrap gap-1.5" id="envFilterGroup">
+            <button onclick="filterMachinesEnv('all')" data-env="all" class="env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-xs transition">
+              All Environments
+            </button>
+            <button onclick="filterMachinesEnv('home')" data-env="home" class="env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition">
+              <i class="fa-solid fa-house mr-1"></i>At Home
+            </button>
+            <button onclick="filterMachinesEnv('school')" data-env="school" class="env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition">
+              <i class="fa-solid fa-school mr-1"></i>At School
+            </button>
+            <button onclick="filterMachinesEnv('community')" data-env="community" class="env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition">
+              <i class="fa-solid fa-city mr-1"></i>In the Community
+            </button>
+          </div>
+        </div>
+
+        <!-- Lever Classes Quick Mnemonic Callout -->
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-lightbulb text-amber-500 text-lg mt-0.5"></i>
+            <div class="text-xs text-slate-700 space-y-1">
+              <p class="font-bold text-amber-900">Memory Trick for the 3 Classes of Levers: "FLE — 1 - 2 - 3"</p>
+              <p>Identify what is in the <strong>MIDDLE</strong>: <strong>1st Class</strong> = <strong>F</strong>ulcrum in middle (seesaw, scissors, crowbar) • <strong>2nd Class</strong> = <strong>L</strong>oad in middle (wheelbarrow, nutcracker, bottle opener) • <strong>3rd Class</strong> = <strong>E</strong>ffort in middle (broom, tweezers, fishing rod, stapler).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Machine Cards Grid -->
+        <div id="simpleMachinesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- SECTION 1B: ADVANTAGES & LIMITATIONS OF SIMPLE MACHINES -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Section 1B</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Guided Investigation: Advantages &amp; Limitations</h2>
+          <p class="text-xs sm:text-sm text-slate-600">Understanding the trade-off between force and distance, plus the real-world role of friction.</p>
+        </div>
+
+        <!-- Work-Energy Principle Box -->
+        <div class="bg-gradient-to-r from-sky-50 to-teal-50 border border-sky-200 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <h3 class="font-extrabold text-sm sm:text-base text-sky-950 flex items-center gap-2">
+              <i class="fa-solid fa-scale-balanced text-sky-600"></i>
+              <span>The Golden Rule of Work: $W = F \times d$</span>
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+              Simple machines <strong>do NOT reduce the total amount of work</strong> required! Instead, they make work feel easier by <strong>decreasing the effort force ($F$)</strong> needed—at the cost of moving that force over a <strong>greater distance ($d$)</strong>—or by changing the direction of the force. Because of <strong>friction</strong>, actual output work is always slightly less than input work.
+            </p>
+          </div>
+          <div class="shrink-0 bg-white px-4 py-2.5 rounded-xl border border-sky-200 text-center shadow-2xs">
+            <p class="text-[11px] font-bold uppercase text-slate-500">Force–Distance Trade-Off</p>
+            <p class="text-sm font-extrabold text-teal-700 mt-0.5">&darr; Less Force = &uarr; More Distance</p>
+          </div>
+        </div>
+
+        <!-- 4 Focused Machines Advantages & Limitations Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Inclined Plane -->
+          <div class="rounded-2xl border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-ramp-loading"></i>
+              </span>
+              <h3 class="font-extrabold text-base text-slate-900">1. Inclined Planes (Ramps)</h3>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-circle-plus mr-1 text-emerald-600"></i>Advantages:</p>
+                <p class="text-slate-700">Allows heavy loads to be raised gradually using <strong>much less upward lifting force</strong> than lifting straight up. Gentle slopes require even less effort.</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p class="font-bold text-amber-900 mb-1"><i class="fa-solid fa-circle-minus mr-1 text-amber-600"></i>Limitations:</p>
+                <p class="text-slate-700">The object must be pushed or pulled over a <strong>much longer distance</strong>, takes more space to build, and sliding friction opposes motion along the ramp surface.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wedges -->
+          <div class="rounded-2xl border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-play fa-rotate-90"></i>
+              </span>
+              <h3 class="font-extrabold text-base text-slate-900">2. Wedges (Knives, Axes, Nails)</h3>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-circle-plus mr-1 text-emerald-600"></i>Advantages:</p>
+                <p class="text-slate-700">Concentrates downward input force onto a very thin edge and redirects it outward as a <strong>powerful sideways splitting, cutting, or piercing force</strong>.</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p class="font-bold text-amber-900 mb-1"><i class="fa-solid fa-circle-minus mr-1 text-amber-600"></i>Limitations:</p>
+                <p class="text-slate-700">Experiences <strong>very high surface friction</strong> along both sloped sides, dulls over time requiring sharpening, and poses safety hazards if mishandled.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Levers -->
+          <div class="rounded-2xl border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-scale-unbalanced"></i>
+              </span>
+              <h3 class="font-extrabold text-base text-slate-900">3. Levers (Crowbars, Scissors, Wheelbarrows)</h3>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-circle-plus mr-1 text-emerald-600"></i>Advantages:</p>
+                <p class="text-slate-700">Multiplies force when the effort arm is longer than the load arm (Classes 1 &amp; 2), <strong>reverses force direction</strong> (Class 1), or increases speed/reach (Class 3).</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p class="font-bold text-amber-900 mb-1"><i class="fa-solid fa-circle-minus mr-1 text-amber-600"></i>Limitations:</p>
+                <p class="text-slate-700">Has a <strong>limited lifting height / arc of motion</strong>, requires a rigid beam that will not bend or snap, and needs a stable fulcrum support.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pulleys -->
+          <div class="rounded-2xl border border-slate-200 p-4 space-y-3 bg-slate-50/50">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-circle-dot"></i>
+              </span>
+              <h3 class="font-extrabold text-base text-slate-900">4. Pulleys (Flagpoles, Cranes, Wells)</h3>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-circle-plus mr-1 text-emerald-600"></i>Advantages:</p>
+                <p class="text-slate-700">A <strong>fixed pulley</strong> changes force direction so you can pull down using your body weight; <strong>movable &amp; block-and-tackle pulleys</strong> multiply lifting force.</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p class="font-bold text-amber-900 mb-1"><i class="fa-solid fa-circle-minus mr-1 text-amber-600"></i>Limitations:</p>
+                <p class="text-slate-700">Fixed pulleys give <strong>no force reduction</strong> ($MA = 1$), while force-multiplying compound pulleys require pulling a <strong>much longer length of rope</strong> plus axle friction.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1C: INTERACTIVE VIRTUAL LEVER FAIR TEST LAB -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-teal-200 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Section 1C • Interactive Virtual Lab</span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">First-Class Lever Fair Test Simulator</h2>
+            <p class="text-xs sm:text-sm text-slate-600">Investigate how moving the fulcrum changes the <strong>magnitude</strong> and <strong>direction</strong> of the effort force needed to lift a load.</p>
+          </div>
+          <button onclick="triggerLeverLift()" class="self-start sm:self-auto px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm shadow-xs transition flex items-center gap-2 animate-pulse-glow">
+            <i class="fa-solid fa-play"></i>
+            <span>Test Lift &amp; Log Trial</span>
+          </button>
+        </div>
+
+        <!-- Fair Test Variables Banner -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-3">
+            <p class="font-extrabold text-teal-900 uppercase tracking-wide text-[11px]"><i class="fa-solid fa-sliders mr-1"></i>Independent Variable (Changed)</p>
+            <p class="text-slate-700 mt-1"><strong>Fulcrum Position</strong> along the $100\text{ cm}$ beam (changes Effort Arm vs. Load Arm length).</p>
+          </div>
+          <div class="bg-sky-50 border border-sky-200 rounded-xl p-3">
+            <p class="font-extrabold text-sky-900 uppercase tracking-wide text-[11px]"><i class="fa-solid fa-gauge-high mr-1"></i>Dependent Variables (Measured)</p>
+            <p class="text-slate-700 mt-1"><strong>Magnitude of Effort Force ($N$)</strong> required to lift the load &amp; <strong>Direction of Force</strong>.</p>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <p class="font-extrabold text-amber-900 uppercase tracking-wide text-[11px]"><i class="fa-solid fa-lock mr-1"></i>Controlled Variables (Kept Same)</p>
+            <p class="text-slate-700 mt-1">Total beam length ($100\text{ cm}$), load weight (unless testing load mass), and smooth fulcrum pivot.</p>
+          </div>
+        </div>
+
+        <!-- Lab Interactive Canvas + Controls -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          <!-- Interactive SVG Lever Visualization -->
+          <div class="lg:col-span-7 bg-slate-900 rounded-2xl p-4 text-white relative overflow-hidden">
+            <div class="flex items-center justify-between text-xs text-slate-300 mb-2">
+              <span><i class="fa-solid fa-ruler-horizontal text-teal-400 mr-1"></i>100 cm Rigid Lever Beam</span>
+              <span id="leverDirectionBadge" class="px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 font-semibold">
+                Direction: Push DOWN &darr; to Lift UP &uarr;
+              </span>
+            </div>
+            <svg id="leverLabSvg" viewBox="0 0 560 250" class="w-full h-auto">
+              <!-- Ground / Table Base -->
+              <rect x="20" y="215" width="520" height="14" rx="4" fill="#334155" />
+              <!-- Ruler Scale Ticks -->
+              <line x1="60" y1="205" x2="500" y2="205" stroke="#64748b" stroke-width="1.5" />
+              <text x="60" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">0 cm</text>
+              <text x="280" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">50 cm</text>
+              <text x="500" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">100 cm</text>
+
+              <!-- Fulcrum Triangle (moves dynamically) -->
+              <polygon id="leverFulcrumPoly" points="280,145 262,215 298,215" fill="#14b8a6" stroke="#5eead4" stroke-width="2" />
+              <text id="leverFulcrumLabel" x="280" y="242" fill="#5eead4" font-size="11" font-weight="700" text-anchor="middle">Fulcrum (50 cm)</text>
+
+              <!-- Rotating Lever Group centered at fulcrum -->
+              <g id="leverBeamGroup" transform="rotate(0 280 145)">
+                <!-- Rigid Beam -->
+                <rect x="60" y="139" width="440" height="12" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" />
+                <!-- Load Block on Left (x=70) -->
+                <rect x="65" y="99" width="44" height="40" rx="6" fill="#f59e0b" stroke="#fde68a" stroke-width="2" />
+                <text id="leverLoadText" x="87" y="123" fill="#0f172a" font-size="11" font-weight="800" text-anchor="middle">40 N</text>
+                <!-- Load Upward Lift Indicator -->
+                <path d="M87,90 L87,64 M80,71 L87,63 L94,71" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round" />
+                <text x="87" y="56" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">LOAD UP &uarr;</text>
+
+                <!-- Effort Force Arrow on Right (x=475) -->
+                <path d="M475,85 L475,132 M468,124 L475,133 L482,124" stroke="#38bdf8" stroke-width="3.5" fill="none" stroke-linecap="round" />
+                <text id="leverEffortText" x="475" y="75" fill="#7dd3fc" font-size="11" font-weight="800" text-anchor="middle">Effort: 40.0 N &darr;</text>
+              </g>
+
+              <!-- Dimension Annotations -->
+              <text id="leverArmsSummary" x="280" y="24" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">
+                Load Arm: 50 cm | Effort Arm: 50 cm
+              </text>
+            </svg>
+          </div>
+
+          <!-- Sliders & Live Readout Panel -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3.5">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-700">Fulcrum Position (from Load):</span>
+                  <span id="fulcrumPosVal" class="text-teal-700">50 cm</span>
+                </div>
+                <input type="range" id="fulcrumSlider" min="20" max="80" value="50" step="5" oninput="updateLeverLab()" class="w-full" />
+                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                  <span>20 cm (Close to Load)</span>
+                  <span>50 cm (Center)</span>
+                  <span>80 cm (Close to Effort)</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-700">Controlled Load Weight:</span>
+                  <span id="loadWeightVal" class="text-amber-700">40 N</span>
+                </div>
+                <input type="range" id="loadSlider" min="10" max="100" value="40" step="10" oninput="updateLeverLab()" class="w-full" />
+              </div>
+            </div>
+
+            <!-- Live Calculation Cards -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="bg-teal-50 border border-teal-200 rounded-xl p-3">
+                <p class="text-[11px] font-bold text-teal-800 uppercase">Effort Arm ($d_E$)</p>
+                <p id="calcEffortArm" class="text-lg font-extrabold text-teal-950">50 cm</p>
+                <p id="calcLoadArm" class="text-[11px] text-teal-700">Load Arm ($d_L$): 50 cm</p>
+              </div>
+              <div class="bg-sky-50 border border-sky-200 rounded-xl p-3">
+                <p class="text-[11px] font-bold text-sky-800 uppercase">Mechanical Advantage</p>
+                <p id="calcMA" class="text-lg font-extrabold text-sky-950">1.00&times;</p>
+                <p class="text-[11px] text-sky-700">$MA = d_E \div d_L$</p>
+              </div>
+              <div class="col-span-2 bg-slate-900 text-white rounded-xl p-3.5 flex items-center justify-between">
+                <div>
+                  <p class="text-[11px] font-bold text-slate-400 uppercase">Required Effort Force ($F_E$)</p>
+                  <p id="calcEffortForce" class="text-xl font-extrabold text-amber-400">40.0 N</p>
+                </div>
+                <span id="leverFindingTag" class="px-2.5 py-1 rounded-lg bg-slate-800 text-xs font-semibold text-teal-300 border border-slate-700">
+                  Equal Force (1:1)
+                </span>
+              </div>
+            </div>
+
+            <!-- Fair Test Observation Log -->
+            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-table-list text-teal-600 mr-1"></i>Fair Test Trial Log</span>
+                <button onclick="clearLeverLog()" class="text-[11px] text-slate-500 hover:text-rose-600 font-semibold">Clear</button>
+              </div>
+              <div id="leverTrialLog" class="text-[11px] text-slate-600 space-y-1 max-h-24 overflow-y-auto">
+                <p class="italic text-slate-400">Click "Test Lift &amp; Log Trial" to record measurements.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1D: TOPIC 1 QUIZ (10 ITEMS) -->
+      <div id="quiz-container-t1"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: PROPERTIES OF WATER AND SOUND WAVES (WEEKS 8 TO 10)          -->
+    <!-- =================================================================== -->
+    <section id="panel-2" class="tab-panel hidden space-y-6">
+      <!-- Learning Competencies Banner -->
+      <div class="bg-gradient-to-r from-sky-700 to-teal-700 rounded-2xl p-5 text-white shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wide uppercase">
+            Module 2 • Weeks 8 to 10
+          </span>
+          <span class="text-xs text-sky-100 font-medium">3 Core Competencies</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold">Properties of Water and Sound Waves</h1>
+        <ul class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs text-sky-50">
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Identify that waves carry energy from a source to a receiver.</span>
+          </li>
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Investigate water waves in a ripple tank/tub and describe shape (crests &amp; troughs), size (width &amp; height), and movement (reflection &amp; bending).</span>
+          </li>
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Identify how wave properties are described using scientific terms: amplitude, frequency, wavelength, and velocity.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Visual Showcase Card with Discreet Custom Photo Upload -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-500"></i>
+              <span>Section 2A: Waves Carry Energy From a Source to a Receiver</span>
+            </h2>
+            <p class="text-xs text-slate-500">A wave is a rhythmic disturbance that transfers <strong>energy</strong> through a medium or space <strong>without permanently transporting matter</strong>.</p>
+          </div>
+          <div>
+            <input type="file" id="upload-topic-2" accept="image/*" class="hidden" onchange="handleCustomPhotoUpload(event, 2)" />
+            <button onclick="document.getElementById('upload-topic-2').click()" title="Upload your own ripple tank or wave experiment photo" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-sky-50 text-slate-600 hover:text-sky-700 border border-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-camera"></i>
+              <span class="hidden sm:inline">Upload Photo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          <div id="showcase-svg-2" class="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Source -->
+            <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-3.5 space-y-1.5">
+              <div class="flex items-center gap-2 font-extrabold text-xs text-sky-900 uppercase">
+                <span class="w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center">1</span>
+                <span>Vibrating Source</span>
+              </div>
+              <p class="text-xs text-slate-700">Every wave begins with a vibration that supplies energy—such as a <strong>pebble dropped in water</strong>, a <strong>ringing bell</strong>, or <strong>vocal cords</strong>.</p>
+            </div>
+            <!-- Medium -->
+            <div class="bg-teal-50/70 border border-teal-200 rounded-xl p-3.5 space-y-1.5">
+              <div class="flex items-center gap-2 font-extrabold text-xs text-teal-900 uppercase">
+                <span class="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center">2</span>
+                <span>Medium (Energy Carrier)</span>
+              </div>
+              <p class="text-xs text-slate-700">Particles in water, air, or solids oscillate in place and pass energy to neighboring particles. <strong>A floating leaf bobs up and down</strong> instead of drifting away!</p>
+            </div>
+            <!-- Receiver -->
+            <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
+              <div class="flex items-center gap-2 font-extrabold text-xs text-amber-900 uppercase">
+                <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center">3</span>
+                <span>Energy Receiver</span>
+              </div>
+              <p class="text-xs text-slate-700">The receiver absorbs the arriving wave energy—such as a <strong>floating cork bobbing</strong>, the <strong>shoreline</strong>, a <strong>microphone</strong>, or your <strong>human eardrum</strong>.</p>
+            </div>
+          </div>
+
+          <div id="custom-photo-slot-2" class="hidden lg:col-span-5 bg-slate-50 rounded-xl p-3 border border-sky-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-sky-800"><i class="fa-solid fa-image mr-1"></i>Uploaded Ripple Tank Photo</span>
+              <button onclick="removeCustomPhoto(2)" class="text-xs text-rose-600 hover:underline font-semibold">Remove</button>
+            </div>
+            <img id="custom-photo-img-2" alt="Uploaded ripple tank photo" class="w-full h-36 object-cover rounded-lg border border-slate-200" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2B: RIPPLE TANK INVESTIGATION & INTERACTIVE SIMULATOR -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-600">Section 2B • Ripple Tank Investigation</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Observing Water Wave Shape, Size &amp; Movement Patterns</h2>
+          <p class="text-xs sm:text-sm text-slate-600">Using an improvised ripple tank (a clear basin of water with a light source), we observe three core wave features:</p>
+        </div>
+
+        <!-- 3 Observation Feature Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+            <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-mountain text-sky-600"></i>
+              <span>a. Shape: Crests &amp; Troughs</span>
+            </h3>
+            <p class="text-slate-600 leading-relaxed">
+              • <strong>Crest:</strong> The highest upward peak of a wave.<br />
+              • <strong>Trough:</strong> The lowest downward valley between two crests.
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+            <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-up-down-left-right text-teal-600"></i>
+              <span>b. Size: Height &amp; Width</span>
+            </h3>
+            <p class="text-slate-600 leading-relaxed">
+              • <strong>Wave Height:</strong> Vertical distance from trough to crest ($= 2 \times \text{Amplitude}$).<br />
+              • <strong>Wave Width (Wavelength):</strong> Horizontal distance between consecutive crests.
+            </p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+            <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-share-nodes text-amber-600"></i>
+              <span>c. Movement: Reflection &amp; Bending</span>
+            </h3>
+            <p class="text-slate-600 leading-relaxed">
+              • <strong>Reflection:</strong> Waves bounce back when hitting hard tub walls (in sound, this creates an <strong>echo</strong>).<br />
+              • <strong>Bending (Refraction/Diffraction):</strong> Waves bend when entering shallow water or curving around barriers.
+            </p>
+          </div>
+        </div>
+
+        <!-- Interactive 2D Ripple Tank Simulator -->
+        <div class="bg-slate-900 rounded-2xl p-4 sm:p-5 text-white space-y-4">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Interactive HTML5 Canvas Simulator</span>
+              <h3 class="text-base sm:text-lg font-extrabold">Virtual Improvised Ripple Tank</h3>
+              <p class="text-xs text-slate-300">Click anywhere inside the water tank to drop pebbles, or use the controls below to test reflection and wave bending.</p>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-2">
+              <button onclick="rippleDropCenter()" class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5">
+                <i class="fa-solid fa-droplet"></i>
+                <span>Single Drop Pulse</span>
+              </button>
+              <button id="rippleContinuousBtn" onclick="toggleRippleContinuous()" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+                <i class="fa-solid fa-repeat"></i>
+                <span>Continuous Generator: OFF</span>
+              </button>
+              <button onclick="clearRippleTank()" class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs transition">
+                Clear Tank
+              </button>
+            </div>
+          </div>
+
+          <!-- Tank Mode Selector + Sliders -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            <div class="lg:col-span-8">
+              <div class="relative rounded-xl overflow-hidden border-2 border-sky-500/40 bg-sky-950">
+                <canvas id="rippleTankCanvas" class="w-full h-56 sm:h-64 block cursor-crosshair"></canvas>
+                <div id="rippleModeOverlayBadge" class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-slate-950/75 backdrop-blur-xs text-[11px] font-semibold text-sky-200 border border-sky-400/30 pointer-events-none">
+                  Mode: Open Water Tank (Tap water to create crests &amp; troughs)
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-4 space-y-3 bg-slate-800/80 p-3.5 rounded-xl border border-slate-700">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200 block">Tank Barrier / Depth Setup:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                  <button onclick="setRippleMode('open')" data-rmode="open" class="ripple-mode-btn text-left px-3 py-2 rounded-lg text-xs font-bold bg-sky-600 text-white transition">
+                    1. Open Water (Circular Ripples)
+                  </button>
+                  <button onclick="setRippleMode('wall')" data-rmode="wall" class="ripple-mode-btn text-left px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">
+                    2. Wall Barrier (Wave Reflection)
+                  </button>
+                  <button onclick="setRippleMode('bend')" data-rmode="bend" class="ripple-mode-btn text-left px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">
+                    3. Slit &amp; Shallow Zone (Bending)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+                  <span>Drop Intensity (Wave Height):</span>
+                  <span id="rippleIntensityLabel" class="text-amber-400">Medium</span>
+                </div>
+                <input type="range" id="rippleIntensitySlider" min="150" max="500" value="320" oninput="updateRippleLabels()" class="w-full" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+                  <span>Generator Drip Rate (Frequency):</span>
+                  <span id="rippleRateLabel" class="text-teal-400">Normal</span>
+                </div>
+                <input type="range" id="rippleRateSlider" min="1" max="5" value="3" oninput="updateRippleLabels()" class="w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2C: SCIENTIFIC WAVE PROPERTIES & VELOCITY CALCULATOR -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Section 2C • Scientific Terminology &amp; Math</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Amplitude, Wavelength, Frequency &amp; Wave Velocity</h2>
+          <p class="text-xs sm:text-sm text-slate-600">Scientists measure both water waves and sound waves using four fundamental physical quantities:</p>
+        </div>
+
+        <!-- 4 Property Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+          <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-amber-950">Amplitude ($A$)</span>
+              <span class="px-2 py-0.5 rounded bg-amber-200/70 text-amber-900 font-bold">meters (m)</span>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              Maximum vertical distance from the <strong>rest line</strong> to a crest or trough. Measures <strong>wave energy</strong>.
+            </p>
+            <p class="text-[11px] font-semibold text-amber-800 pt-1 border-t border-amber-200/70">
+              <i class="fa-solid fa-volume-high mr-1"></i>Sound link: Determines <strong>Loudness</strong>.
+            </p>
+          </div>
+
+          <div class="bg-sky-50/70 border border-sky-200 rounded-xl p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-sky-950">Wavelength ($\lambda$)</span>
+              <span class="px-2 py-0.5 rounded bg-sky-200/70 text-sky-900 font-bold">meters (m)</span>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              Horizontal distance between <strong>two successive crests</strong> (or two successive troughs).
+            </p>
+            <p class="text-[11px] font-semibold text-sky-800 pt-1 border-t border-sky-200/70">
+              <i class="fa-solid fa-arrows-left-right mr-1"></i>Inversely related to frequency at fixed speed.
+            </p>
+          </div>
+
+          <div class="bg-teal-50/70 border border-teal-200 rounded-xl p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-teal-950">Frequency ($f$)</span>
+              <span class="px-2 py-0.5 rounded bg-teal-200/70 text-teal-900 font-bold">Hertz (Hz)</span>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              Number of complete waves passing a point per second ($f = 1 / T$, where $T$ is period in seconds).
+            </p>
+            <p class="text-[11px] font-semibold text-teal-800 pt-1 border-t border-teal-200/70">
+              <i class="fa-solid fa-music mr-1"></i>Sound link: Determines <strong>Pitch</strong> (high $f$ = high pitch).
+            </p>
+          </div>
+
+          <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-sm text-emerald-950">Wave Velocity ($v$)</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-200/70 text-emerald-900 font-bold">m/s</span>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+              Speed at which the wave pattern travels through a medium: <strong>$v = f \times \lambda$</strong>.
+            </p>
+            <p class="text-[11px] font-semibold text-emerald-800 pt-1 border-t border-emerald-200/70">
+              <i class="fa-solid fa-gauge mr-1"></i>Sound speed: Solid &gt; Liquid &gt; Gas (0 in vacuum).
+            </p>
+          </div>
+        </div>
+
+        <!-- Interactive Sine Wave Graph & Velocity Calculator -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center bg-slate-50 rounded-2xl p-4 border border-slate-200">
+          <div class="lg:col-span-7 bg-white rounded-xl p-3 border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-bold text-slate-700"><i class="fa-solid fa-chart-line text-sky-600 mr-1"></i>Live Wave Anatomy &amp; Motion Graph</span>
+              <span id="soundPerceptionBadge" class="px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-bold text-[11px]">
+                Medium Pitch • Moderate Loudness
+              </span>
+            </div>
+            <canvas id="waveGraphCanvas" class="w-full h-52 block rounded-lg bg-slate-950"></canvas>
+          </div>
+
+          <div class="lg:col-span-5 space-y-3">
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Amplitude ($A$):</span>
+                <span id="waveAmpVal" class="text-amber-600">3.0 m</span>
+              </div>
+              <input type="range" id="waveAmpSlider" min="1" max="5" step="0.5" value="3" oninput="updateWaveCalc()" class="w-full" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Frequency ($f$):</span>
+                <span id="waveFreqVal" class="text-teal-600">4 Hz</span>
+              </div>
+              <input type="range" id="waveFreqSlider" min="1" max="10" step="1" value="4" oninput="updateWaveCalc()" class="w-full" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Wavelength ($\lambda$):</span>
+                <span id="waveLambdaVal" class="text-sky-600">5 m</span>
+              </div>
+              <input type="range" id="waveLambdaSlider" min="1" max="10" step="1" value="5" oninput="updateWaveCalc()" class="w-full" />
+            </div>
+
+            <div class="bg-slate-900 text-white rounded-xl p-3.5 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400 font-semibold">Calculated Wave Velocity ($v = f \times \lambda$):</span>
+                <span id="wavePeriodText" class="text-[11px] text-slate-400">Period $T = 0.25\text{ s}$</span>
+              </div>
+              <p id="waveVelocityResult" class="text-2xl font-extrabold text-emerald-400">20.0 m/s</p>
+              <p id="waveFormulaStep" class="text-[11px] text-slate-300 font-mono">v = 4 Hz &times; 5 m = 20 m/s</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2D: TOPIC 2 QUIZ (10 ITEMS) -->
+      <div id="quiz-container-t2"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: LONGITUDINAL AND TRANSVERSE WAVES (WEEK 11)                  -->
+    <!-- =================================================================== -->
+    <section id="panel-3" class="tab-panel hidden space-y-6">
+      <!-- Learning Competencies Banner -->
+      <div class="bg-gradient-to-r from-emerald-700 to-teal-700 rounded-2xl p-5 text-white shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-white/15 text-xs font-bold tracking-wide uppercase">
+            Module 3 • Week 11
+          </span>
+          <span class="text-xs text-emerald-100 font-medium">2 Core Competencies</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold">Longitudinal and Transverse Waves</h1>
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs text-emerald-50">
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Identify differences and similarities between longitudinal waves and transverse waves.</span>
+          </li>
+          <li class="bg-white/10 rounded-xl p-3 border border-white/15 flex items-start gap-2">
+            <i class="fa-solid fa-circle-check text-amber-300 mt-0.5"></i>
+            <span>Identify some examples of longitudinal waves and transverse waves.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- SECTION 3A: INTERACTIVE DUAL SLINKY & ROPE MOTION SIMULATOR -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Section 3A • Interactive Motion Simulator</span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Dual Rope (Transverse) &amp; Slinky (Longitudinal) Simulator</h2>
+            <p class="text-xs sm:text-sm text-slate-600">Watch the highlighted <span class="text-amber-600 font-bold">Amber Particle</span> to compare how medium particles move relative to wave energy direction.</p>
+          </div>
+          <!-- Discreet Custom Image Upload -->
+          <div>
+            <input type="file" id="upload-topic-3" accept="image/*" class="hidden" onchange="handleCustomPhotoUpload(event, 3)" />
+            <button onclick="document.getElementById('upload-topic-3').click()" title="Upload your own Slinky or rope wave demo photo" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-camera"></i>
+              <span class="hidden sm:inline">Upload Photo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Optional Custom Photo Slot 3 -->
+        <div id="custom-photo-slot-3" class="hidden bg-slate-50 rounded-xl p-3 border border-emerald-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-800"><i class="fa-solid fa-image mr-1"></i>Uploaded Slinky / Rope Experiment Photo</span>
+            <button onclick="removeCustomPhoto(3)" class="text-xs text-rose-600 hover:underline font-semibold">Remove</button>
+          </div>
+          <img id="custom-photo-img-3" alt="Uploaded wave demonstration photo" class="w-full max-h-48 object-cover rounded-lg border border-slate-200" />
+        </div>
+
+        <!-- Simulator Controls -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="setSlinkyMode('both')" data-smode="both" class="slinky-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">
+              Side-by-Side Comparison
+            </button>
+            <button onclick="setSlinkyMode('transverse')" data-smode="transverse" class="slinky-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 transition">
+              Transverse Wave (Rope)
+            </button>
+            <button onclick="setSlinkyMode('longitudinal')" data-smode="longitudinal" class="slinky-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 transition">
+              Longitudinal Wave (Slinky)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <span>Speed:</span>
+              <input type="range" id="slinkySpeedSlider" min="1" max="5" value="3" class="w-24" />
+            </div>
+            <button id="slinkyPlayPauseBtn" onclick="toggleSlinkyPlay()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-pause"></i>
+              <span>Pause</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulator Canvas -->
+        <div class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800">
+          <canvas id="slinkySimCanvas" class="w-full h-64 sm:h-72 block"></canvas>
+        </div>
+      </div>
+
+      <!-- SECTION 3B: SIMILARITIES & DIFFERENCES -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600">Section 3B • Compare &amp; Contrast</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Similarities &amp; Differences: Longitudinal vs. Transverse Waves</h2>
+        </div>
+
+        <!-- Similarities Card Grid -->
+        <div class="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 space-y-2.5">
+          <h3 class="font-extrabold text-sm sm:text-base text-teal-950 flex items-center gap-2">
+            <i class="fa-solid fa-equals text-teal-600"></i>
+            <span>Key Similarities (What Both Wave Types Share)</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+            <div class="bg-white p-3 rounded-xl border border-teal-100">
+              <p class="font-bold text-teal-900">1. Transfer Energy Only</p>
+              <p class="text-slate-600 mt-0.5">Both transport energy from a source to a receiver without permanently moving matter.</p>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-teal-100">
+              <p class="font-bold text-teal-900">2. Caused by Vibrations</p>
+              <p class="text-slate-600 mt-0.5">Both originate from a vibrating or oscillating source.</p>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-teal-100">
+              <p class="font-bold text-teal-900">3. Same Core Properties</p>
+              <p class="text-slate-600 mt-0.5">Both are described by amplitude, wavelength, frequency, and velocity ($v = f \times \lambda$).</p>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-teal-100">
+              <p class="font-bold text-teal-900">4. Wave Behaviors</p>
+              <p class="text-slate-600 mt-0.5">Both can undergo reflection, refraction (bending), and diffraction.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Structured Comparison Table -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-900 text-white">
+                <th class="p-3 font-bold">Feature</th>
+                <th class="p-3 font-bold text-sky-300">Transverse Waves</th>
+                <th class="p-3 font-bold text-emerald-300">Longitudinal Waves</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white">
+              <tr>
+                <td class="p-3 font-bold text-slate-900 bg-slate-50">Particle Motion vs. Energy Direction</td>
+                <td class="p-3 text-slate-700">Particles vibrate <strong>perpendicular ($90^\circ$, up &amp; down)</strong> to the direction of wave travel.</td>
+                <td class="p-3 text-slate-700">Particles vibrate <strong>parallel (back &amp; forth)</strong> to the direction of wave travel.</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-bold text-slate-900 bg-slate-50">Main Wave Parts</td>
+                <td class="p-3 text-slate-700"><strong>Crests</strong> (highest peaks) and <strong>Troughs</strong> (lowest valleys).</td>
+                <td class="p-3 text-slate-700"><strong>Compressions</strong> (crowded coils, high pressure) and <strong>Rarefactions</strong> (spread-out coils, low pressure).</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-bold text-slate-900 bg-slate-50">Wavelength ($\lambda$) Measurement</td>
+                <td class="p-3 text-slate-700">Distance from crest to crest (or trough to trough).</td>
+                <td class="p-3 text-slate-700">Distance from center of one compression to the next compression (or rarefaction to rarefaction).</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-bold text-slate-900 bg-slate-50">Medium Requirement</td>
+                <td class="p-3 text-slate-700">Can be mechanical (rope, water surface) OR electromagnetic (light, radio—can travel in a vacuum).</td>
+                <td class="p-3 text-slate-700">Mechanical waves that <strong>require a medium</strong> (solid, liquid, or gas); cannot travel through a vacuum.</td>
+              </tr>
+              <tr>
+                <td class="p-3 font-bold text-slate-900 bg-slate-50">Common Examples</td>
+                <td class="p-3 text-slate-700">Water surface ripples, shaken rope, plucked guitar string, light &amp; X-rays, seismic S-waves.</td>
+                <td class="p-3 text-slate-700">Sound waves in air/water/solids, pushed-and-pulled Slinky, ultrasound, seismic P-waves.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 3C: INTERACTIVE QUICK WAVE SORTER MINI-GAME -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-emerald-200 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Section 3C • Interactive Practice Activity</span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Quick Wave Sorter: Classify Real-World Examples</h2>
+            <p class="text-xs sm:text-sm text-slate-600">Tap <strong>Transverse</strong> or <strong>Longitudinal</strong> for each of the 8 real-world wave phenomena below.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="sorterScorePill" class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-extrabold">
+              Sorted: 0 / 8
+            </span>
+            <button onclick="resetWaveSorter()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div id="waveSorterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- SECTION 3D: TOPIC 3 QUIZ (10 ITEMS) -->
+      <div id="quiz-container-t3"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: FINAL MOCK EXAM (30-ITEM COMBINED ASSESSMENT)                -->
+    <!-- =================================================================== -->
+    <section id="panel-4" class="tab-panel hidden space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 via-teal-900 to-sky-900 rounded-2xl p-5 sm:p-6 text-white shadow-md space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1.5">
+            <span class="px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider">
+              Comprehensive Assessment • 30 Questions
+            </span>
+            <h1 class="text-xl sm:text-2xl font-extrabold">Final Mock Exam: Simple Machines &amp; Waves</h1>
+            <p class="text-xs sm:text-sm text-slate-200">Test your mastery across all three DepEd Science modules. Score <strong>80% (24/30) or higher</strong> to earn your Mastery Certificate!</p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-xs border border-white/15 rounded-2xl p-4 flex items-center gap-4 shrink-0">
+            <div>
+              <p class="text-[11px] uppercase font-bold text-slate-300">Mock Exam Score</p>
+              <p id="mockExamScoreHero" class="text-2xl font-extrabold text-amber-300">0 / 30 (0%)</p>
+              <p id="mockExamAnsweredHero" class="text-xs text-slate-300">0 of 30 items answered</p>
+            </div>
+            <button onclick="resetMockExam()" class="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition">
+              Retake Exam
+            </button>
+          </div>
+        </div>
+
+        <!-- Topic Breakdown Mini Bars -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div class="bg-white/10 rounded-xl p-3">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>1. Simple Machines</span>
+              <span id="mock-sub-t1">0/10</span>
+            </div>
+            <div class="w-full h-1.5 bg-white/15 rounded-full overflow-hidden">
+              <div id="mock-subbar-t1" class="h-full bg-teal-400 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="bg-white/10 rounded-xl p-3">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>2. Water &amp; Sound Waves</span>
+              <span id="mock-sub-t2">0/10</span>
+            </div>
+            <div class="w-full h-1.5 bg-white/15 rounded-full overflow-hidden">
+              <div id="mock-subbar-t2" class="h-full bg-sky-400 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="bg-white/10 rounded-xl p-3">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>3. Longitudinal &amp; Transverse</span>
+              <span id="mock-sub-t3">0/10</span>
+            </div>
+            <div class="w-full h-1.5 bg-white/15 rounded-full overflow-hidden">
+              <div id="mock-subbar-t3" class="h-full bg-emerald-400 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mastery Certificate Banner (Appears when Mock Exam >= 80%) -->
+      <div id="mockCertificateCard" class="hidden bg-gradient-to-br from-amber-50 via-white to-teal-50 border-2 border-amber-400 rounded-2xl p-6 shadow-md text-center space-y-3">
+        <div class="w-14 h-14 mx-auto rounded-full bg-amber-400 text-slate-950 flex items-center justify-center text-2xl shadow-sm">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-amber-700">Certificate of Science Mastery</p>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Outstanding Achievement in Physics &amp; Mechanics!</h2>
+        <p id="mockCertificateSummary" class="text-xs sm:text-sm text-slate-700 max-w-xl mx-auto">
+          You demonstrated strong mastery across Simple Machines, Properties of Water &amp; Sound Waves, and Longitudinal &amp; Transverse Waves.
+        </p>
+      </div>
+
+      <!-- Mock Exam Topic Filter Pills -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-bold text-slate-600"><i class="fa-solid fa-filter text-teal-600 mr-1"></i>Filter Mock Exam Items:</span>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="setMockFilter('all')" data-mfilter="all" class="mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white transition">
+            All Topics (30)
+          </button>
+          <button onclick="setMockFilter('t1')" data-mfilter="t1" class="mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition">
+            Simple Machines (10)
+          </button>
+          <button onclick="setMockFilter('t2')" data-mfilter="t2" class="mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-sky-50 transition">
+            Water &amp; Sound Waves (10)
+          </button>
+          <button onclick="setMockFilter('t3')" data-mfilter="t3" class="mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 transition">
+            Longitudinal &amp; Transverse (10)
+          </button>
+        </div>
+      </div>
+
+      <!-- Mock Exam Questions Container -->
+      <div id="quiz-container-mock"></div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400 border-t border-slate-200/70 mt-8">
+    <p>SciReview: Machines &amp; Waves • Interactive DepEd Science Curriculum Reviewer &amp; Simulation Suite</p>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                -->
+  <!-- ===================================================================== -->
+  <script>
+    /* =========================================================================
+       1. CURRICULUM DATA STRUCTURES (COMPETENCIES, MACHINES, SORTER, QUIZZES)
+       ========================================================================= */
+
+    const COMPETENCIES = [
+      { id: 'c1', module: 'Module 1: Simple Machines', text: 'Observe and describe examples and uses of simple machines found at home, at school, and in the community.' },
+      { id: 'c2', module: 'Module 1: Simple Machines', text: 'Demonstrate through guided investigation the advantages and limitations of inclined planes, wedges, levers, and pulleys.' },
+      { id: 'c3', module: 'Module 1: Simple Machines', text: 'Carry out fair tests to show how levers can be used to change the magnitude and direction of a force.' },
+      { id: 'c4', module: 'Module 2: Water & Sound Waves', text: 'Identify that waves carry energy from a source to a receiver.' },
+      { id: 'c5', module: 'Module 2: Water & Sound Waves', text: 'Investigate water waves in a ripple tank/tub and describe shape (crests & troughs), size (width & height), and movement (reflection & bending).' },
+      { id: 'c6', module: 'Module 2: Water & Sound Waves', text: 'Describe wave properties using scientific terms: amplitude, frequency, wavelength, and velocity.' },
+      { id: 'c7', module: 'Module 3: Longitudinal & Transverse', text: 'Identify differences and similarities between longitudinal waves and transverse waves.' },
+      { id: 'c8', module: 'Module 3: Longitudinal & Transverse', text: 'Identify real-world examples of longitudinal waves and transverse waves.' },
+    ];
+
+    const SIMPLE_MACHINES_DATA = [
+      {
+        id: 'lever',
+        name: 'Lever',
+        subtitle: 'Rigid bar pivoting on a fixed Fulcrum',
+        functionDesc: 'Multiplies effort force (Classes 1 & 2), reverses force direction (Class 1), or increases speed and distance (Class 3).',
+        envs: {
+          home: 'Scissors (1st), bottle opener (2nd), broom & tweezers (3rd)',
+          school: 'Paper cutter (2nd), stapler (3rd), playground seesaw (1st)',
+          community: 'Construction crowbar (1st), gardener’s wheelbarrow (2nd), fishing rod (3rd)'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <polygon points="90,46 78,66 102,66" fill="#0d9488"/>
+          <line x1="25" y1="36" x2="155" y2="52" stroke="#334155" stroke-width="5" stroke-linecap="round"/>
+          <rect x="26" y="20" width="20" height="16" rx="3" fill="#d97706"/>
+          <path d="M150,24 L150,44 M145,39 L150,45 L155,39" stroke="#0284c7" stroke-width="2.5" fill="none"/>
+        </svg>`
+      },
+      {
+        id: 'inclined-plane',
+        name: 'Inclined Plane',
+        subtitle: 'Flat slanted surface connecting low & high levels',
+        functionDesc: 'Reduces the effort force needed to raise heavy objects by spreading the work over a longer sloping distance.',
+        envs: {
+          home: 'Staircases, slanted driveway, tilted drainage board',
+          school: 'Wheelchair accessibility ramp, playground slide',
+          community: 'Delivery truck loading ramp, winding mountain highway'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <polygon points="25,65 155,65 155,20" fill="#ccfbf1" stroke="#0d9488" stroke-width="2.5"/>
+          <rect x="78" y="31" width="22" height="16" rx="2" transform="rotate(-19 88 38)" fill="#d97706"/>
+          <path d="M62,48 L76,43" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'wedge',
+        name: 'Wedge',
+        subtitle: 'Two inclined planes joined back-to-back',
+        functionDesc: 'Converts downward blunt force into strong sideways forces that split, cut, pierce, or hold objects in place.',
+        envs: {
+          home: 'Kitchen knife, vegetable peeler, rubber doorstop, zipper',
+          school: 'Pencil sharpener blade, craft scissors edge, pushpins',
+          community: 'Woodcutter’s axe, carpenter’s chisel, plowshare, nails'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <polygon points="72,18 108,18 90,64" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/>
+          <path d="M90,4 L90,15 M85,11 L90,16 L95,11" stroke="#0284c7" stroke-width="2.5" fill="none"/>
+          <path d="M68,45 L48,45 M112,45 L132,45" stroke="#059669" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: 'screw',
+        name: 'Screw',
+        subtitle: 'Inclined plane wrapped spirally around a cylinder',
+        functionDesc: 'Converts rotational turning force into strong linear clamping, lifting, or fastening force with high holding friction.',
+        envs: {
+          home: 'Jar lids, water bottle caps, light bulb base, corkscrew',
+          school: 'Adjustable swivel stool, microscope fine focus knob, C-clamp',
+          community: 'Mechanic’s car jack, wood & metal bolts, spiral staircase'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <rect x="68" y="10" width="44" height="10" rx="3" fill="#475569"/>
+          <rect x="82" y="20" width="16" height="46" rx="2" fill="#94a3b8"/>
+          <path d="M78,27 L102,33 M78,37 L102,43 M78,47 L102,53 M78,57 L102,63" stroke="#0284c7" stroke-width="2.5"/>
+        </svg>`
+      },
+      {
+        id: 'wheel-axle',
+        name: 'Wheel and Axle',
+        subtitle: 'Large wheel rigidly attached to a central rod (axle)',
+        functionDesc: 'Turning the larger wheel multiplies force at the smaller axle (or turning the axle multiplies speed at the rim).',
+        envs: {
+          home: 'Round doorknob, faucet knob, rolling pin, electric fan',
+          school: 'Hand-crank pencil sharpener, globe stand, cart wheels',
+          community: 'Bicycle wheels, jeepney steering wheel, Ferris wheel, windlass'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <circle cx="90" cy="38" r="27" fill="#e0f2fe" stroke="#0284c7" stroke-width="4"/>
+          <circle cx="90" cy="38" r="8" fill="#0d9488"/>
+          <line x1="90" y1="11" x2="90" y2="65" stroke="#0284c7" stroke-width="2"/>
+          <line x1="63" y1="38" x2="117" y2="38" stroke="#0284c7" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'pulley',
+        name: 'Pulley',
+        subtitle: 'Grooved wheel supporting a moving rope or cable',
+        functionDesc: 'Fixed pulleys reverse pull direction (pull down to lift up); movable and compound pulleys multiply lifting force.',
+        envs: {
+          home: 'Window blinds cord, clothesline pulley, garage door opener',
+          school: 'School flagpole halyard pulley, stage curtain rigging',
+          community: 'Construction crane, water well bucket pulley, elevator cables'
+        },
+        svg: `<svg viewBox="0 0 180 75" class="w-full h-16">
+          <line x1="65" y1="8" x2="115" y2="8" stroke="#334155" stroke-width="4"/>
+          <line x1="90" y1="8" x2="90" y2="28" stroke="#334155" stroke-width="2.5"/>
+          <circle cx="90" cy="30" r="14" fill="#ecfdf5" stroke="#059669" stroke-width="3"/>
+          <line x1="76" y1="30" x2="76" y2="54" stroke="#475569" stroke-width="2"/>
+          <line x1="104" y1="30" x2="104" y2="62" stroke="#475569" stroke-width="2"/>
+          <rect x="68" y="53" width="16" height="14" rx="2" fill="#d97706"/>
+        </svg>`
+      }
+    ];
+
+    const WAVE_SORTER_ITEMS = [
+      { id: 'ws1', title: 'Sound waves traveling through classroom air', type: 'longitudinal', hint: 'Air molecules vibrate back and forth in compressions and rarefactions.' },
+      { id: 'ws2', title: 'Ripples spreading across a pond after a pebble drop', type: 'transverse', hint: 'Water surface moves up and down while ripples spread outward.' },
+      { id: 'ws3', title: 'A jump rope shaken up and down by two students', type: 'transverse', hint: 'Rope segments move vertically while the wave travels horizontally.' },
+      { id: 'ws4', title: 'Pushing and pulling one end of a stretched Slinky', type: 'longitudinal', hint: 'Coils bunch up (compressions) and spread out (rarefactions) along the spring.' },
+      { id: 'ws5', title: 'Sunlight and radio waves traveling from space', type: 'transverse', hint: 'All electromagnetic waves oscillate perpendicular to their direction of travel.' },
+      { id: 'ws6', title: 'Seismic P-waves (Primary earthquake waves)', type: 'longitudinal', hint: 'P-waves compress and expand rock layers parallel to wave propagation.' },
+      { id: 'ws7', title: 'Plucked guitar string vibrating side-to-side', type: 'transverse', hint: 'The string itself vibrates perpendicular to its length.' },
+      { id: 'ws8', title: 'Medical ultrasound pulses scanning a patient', type: 'longitudinal', hint: 'Ultrasound is high-frequency sound (>20,000 Hz), a longitudinal pressure wave.' },
+    ];
+
+    /* 30 Comprehensive Questions (10 per Topic) */
+    const QUIZ_QUESTIONS = {
+      t1: [
+        {
+          id: 't1_q1', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'Which simple machine is used at the top of a school flagpole to raise the flag while you pull downward on the rope?',
+          options: ['Inclined plane', 'Fixed pulley', 'Wedge', 'Screw'],
+          answer: 1,
+          explanation: 'A fixed pulley at the top of a flagpole changes the direction of your effort force—pulling downward lifts the flag upward.'
+        },
+        {
+          id: 't1_q2', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'A wheelchair ramp at the school entrance is an example of an inclined plane. What is its main advantage and limitation?',
+          options: [
+            'Advantage: Requires less force; Limitation: Must travel a longer distance',
+            'Advantage: Reduces total work done; Limitation: Requires more lifting force',
+            'Advantage: Eliminates friction completely; Limitation: Works only on metal wheels',
+            'Advantage: Shortens the path; Limitation: Increases gravitational pull'
+          ],
+          answer: 0,
+          explanation: 'An inclined plane reduces the required effort force to lift a load, but the trade-off is moving the load over a longer sloping distance (plus surface friction).'
+        },
+        {
+          id: 't1_q3', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'In a wheelbarrow used by a community gardener, the heavy soil (load) sits between the wheel (fulcrum) and the handles (effort). What class of lever is this?',
+          options: ['First-class lever', 'Second-class lever', 'Third-class lever', 'Compound wedge'],
+          answer: 1,
+          explanation: 'Using "FLE 1-2-3": In a second-class lever, the Load is in the middle between the Fulcrum (wheel) and Effort (handles).'
+        },
+        {
+          id: 't1_q4', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'Which kitchen tool acts as a wedge by concentrating downward force into sideways cutting forces?',
+          options: ['Rolling pin', 'Jar lid', 'Kitchen knife', 'Round doorknob'],
+          answer: 2,
+          explanation: 'A kitchen knife has two thin inclined planes joined to form a sharp wedge that splits food sideways when pressed downward.'
+        },
+        {
+          id: 't1_q5', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'During a fair test on a first-class lever, a student moves the fulcrum closer to the heavy load while keeping the load weight and ruler length constant. What happens to the required effort force?',
+          options: [
+            'The required effort force decreases because the effort arm becomes longer.',
+            'The required effort force increases because the load arm becomes longer.',
+            'The required effort force stays exactly the same.',
+            'The lever stops changing the direction of force.'
+          ],
+          answer: 0,
+          explanation: 'Moving the fulcrum closer to the load lengthens the effort arm and shortens the load arm, increasing mechanical advantage and decreasing required effort force.'
+        },
+        {
+          id: 't1_q6', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'In the lever fair test described in Question 5, what is the INDEPENDENT variable?',
+          options: ['The weight of the load', 'The position of the fulcrum', 'The total length of the ruler', 'The upward height the load rises'],
+          answer: 1,
+          explanation: 'The independent variable is the single factor intentionally changed by the investigator—here, the position of the fulcrum.'
+        },
+        {
+          id: 't1_q7', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'How does a first-class lever (like a seesaw or crowbar) change the direction of a force?',
+          options: [
+            'Pushing upward on one end pushes the other end upward.',
+            'Pushing downward on the effort end lifts the load end upward.',
+            'Pulling sideways spins the fulcrum in circles.',
+            'It does not change force direction at all.'
+          ],
+          answer: 1,
+          explanation: 'Because the fulcrum sits between the effort and the load, pushing downward on one side causes the opposite side to move upward.'
+        },
+        {
+          id: 't1_q8', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'Which pair correctly matches a simple machine found at home with its type?',
+          options: [
+            'Broom — First-class lever; Axe — Pulley',
+            'Bottle cap — Screw; Doorknob — Wheel and axle',
+            'Stairs — Wedge; Tweezers — Second-class lever',
+            'Scissors — Inclined plane; Hammer claw — Screw'
+          ],
+          answer: 1,
+          explanation: 'A bottle cap has spiral threads (screw), and a doorknob turns a central spindle (wheel and axle).'
+        },
+        {
+          id: 't1_q9', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'What is a key limitation of using a multi-pulley (block-and-tackle) system to lift a heavy engine in a community auto shop?',
+          options: [
+            'It increases the amount of effort force the mechanic must apply.',
+            'The mechanic must pull a much longer length of rope to lift the engine a short height.',
+            'It cannot lift objects heavier than 10 N.',
+            'It eliminates gravity acting on the engine.'
+          ],
+          answer: 1,
+          explanation: 'By the work-energy trade-off (W = F × d), reducing lifting force with multiple pulleys requires pulling a proportionally longer distance of rope.'
+        },
+        {
+          id: 't1_q10', topic: 't1', topicLabel: 'Simple Machines',
+          question: 'Why do brooms, tweezers, and fishing rods belong to the third-class lever family?',
+          options: [
+            'The fulcrum is located at the exact center.',
+            'The load is placed between the fulcrum and the effort.',
+            'The effort force is applied between the fulcrum and the load, increasing speed and range of motion.',
+            'They use grooved wheels to multiply force.'
+          ],
+          answer: 2,
+          explanation: 'In third-class levers (FLE 1-2-3 -> Effort in middle), effort is applied between the fulcrum and load to gain speed and distance at the tip.'
+        }
+      ],
+      t2: [
+        {
+          id: 't2_q1', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'When a pebble is dropped into a tub of water, a floating leaf near the edge bobs up and down in place as ripples pass. What does this prove?',
+          options: [
+            'Waves carry water molecules permanently to the edge of the tub.',
+            'Waves transfer energy from a source to a receiver without transporting matter.',
+            'The leaf creates its own gravity waves.',
+            'Water waves cannot travel through liquids.'
+          ],
+          answer: 1,
+          explanation: 'The leaf bobs vertically because water particles oscillate in place while wave energy travels outward from the pebble (source) to the leaf (receiver).'
+        },
+        {
+          id: 't2_q2', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'In a ripple tank investigation, what are the highest peaks and lowest valleys of the water waves called?',
+          options: [
+            'Compressions and rarefactions',
+            'Crests and troughs',
+            'Nodes and fulcrums',
+            'Reflections and refractions'
+          ],
+          answer: 1,
+          explanation: 'The highest point of a wave is the crest, and the lowest valley between crests is the trough.'
+        },
+        {
+          id: 't2_q3', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'What happens when straight water waves hit a solid flat wall inside a ripple tank?',
+          options: [
+            'They vanish completely without bouncing back.',
+            'They reflect (bounce off) the wall at an angle equal to their incoming angle.',
+            'They turn into electromagnetic light waves.',
+            'Their frequency doubles immediately.'
+          ],
+          answer: 1,
+          explanation: 'Waves reflect off hard barriers following the Law of Reflection. In sound waves, reflection produces an echo.'
+        },
+        {
+          id: 't2_q4', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'In a ripple tank, waves bend and slow down when passing from deep water into a shallow glass plate zone. What is this wave behavior called?',
+          options: ['Refraction (bending)', 'Rarefaction', 'Resonance', 'Insulation'],
+          answer: 0,
+          explanation: 'Refraction is the bending of a wave caused by a change in wave speed as it enters a region of different depth or medium.'
+        },
+        {
+          id: 't2_q5', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'Which scientific term describes the vertical distance from the rest line (equilibrium) to a wave crest, which indicates how much energy the wave carries?',
+          options: ['Wavelength', 'Frequency', 'Amplitude', 'Velocity'],
+          answer: 2,
+          explanation: 'Amplitude is the maximum displacement from the rest position to a crest or trough. Larger amplitude means greater wave energy (and louder sound).'
+        },
+        {
+          id: 't2_q6', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'How is wavelength (λ) measured on a water wave diagram?',
+          options: [
+            'The vertical height from trough to crest',
+            'The horizontal distance between two consecutive crests or two consecutive troughs',
+            'The number of waves passing per second',
+            'The time it takes for one wave to stop'
+          ],
+          answer: 1,
+          explanation: 'Wavelength (λ) is the horizontal spatial length of one complete wave cycle—measured from crest to next crest or trough to next trough.'
+        },
+        {
+          id: 't2_q7', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'A vibrating guitar string produces 10 complete sound waves every 2 seconds. What is its frequency?',
+          options: ['20 Hz', '5 Hz', '0.2 Hz', '12 Hz'],
+          answer: 1,
+          explanation: 'Frequency (f) = number of waves ÷ time = 10 waves ÷ 2 seconds = 5 Hz (waves per second).'
+        },
+        {
+          id: 't2_q8', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'Calculate the velocity (v) of a water wave with a frequency of 6 Hz and a wavelength of 0.5 meters. (Use v = f × λ)',
+          options: ['12.0 m/s', '3.0 m/s', '6.5 m/s', '0.08 m/s'],
+          answer: 1,
+          explanation: 'Using v = f × λ: v = 6 Hz × 0.5 m = 3.0 m/s.'
+        },
+        {
+          id: 't2_q9', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'If a musician plucks a string harder to make a LOUDER sound at the same musical note, which wave property increases?',
+          options: ['Amplitude', 'Frequency', 'Wavelength', 'Speed in air'],
+          answer: 0,
+          explanation: 'Loudness corresponds to wave energy and Amplitude. Same note means the frequency (pitch) stays constant.'
+        },
+        {
+          id: 't2_q10', topic: 't2', topicLabel: 'Water & Sound Waves',
+          question: 'Through which medium does a sound wave travel FASTEST, and where can it NOT travel at all?',
+          options: [
+            'Fastest in air; cannot travel in steel',
+            'Fastest in a vacuum; cannot travel in water',
+            'Fastest in solids (like steel); cannot travel in a vacuum',
+            'Fastest in water; cannot travel in wood'
+          ],
+          answer: 2,
+          explanation: 'Sound travels fastest in tightly packed solids (~5,000 m/s in steel), slower in liquids, slower in gases, and cannot travel in an empty vacuum (0 m/s).'
+        }
+      ],
+      t3: [
+        {
+          id: 't3_q1', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'What is the fundamental difference between a transverse wave and a longitudinal wave?',
+          options: [
+            'Transverse waves carry energy; longitudinal waves carry only matter.',
+            'In transverse waves, particles vibrate perpendicular to wave travel; in longitudinal waves, particles vibrate parallel to wave travel.',
+            'Transverse waves only occur in gases; longitudinal waves only occur in outer space.',
+            'Longitudinal waves have crests and troughs; transverse waves have compressions.'
+          ],
+          answer: 1,
+          explanation: 'Transverse = perpendicular (90°, up/down) particle vibration; Longitudinal = parallel (back/forth) particle vibration.'
+        },
+        {
+          id: 't3_q2', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'Which statement describes a true SIMILARITY between longitudinal waves and transverse waves?',
+          options: [
+            'Both can travel through an empty vacuum without a medium.',
+            'Both transfer energy without permanently transferring matter and obey v = f × λ.',
+            'Both are made of alternating compressions and rarefactions.',
+            'Both cause medium particles to move in circles only.'
+          ],
+          answer: 1,
+          explanation: 'Both wave types transfer energy from source to receiver without transporting matter, originate from vibrations, and follow v = f × λ.'
+        },
+        {
+          id: 't3_q3', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'In a longitudinal wave on a Slinky, what are the regions where the coils are squeezed closely together called?',
+          options: ['Troughs', 'Rarefactions', 'Compressions', 'Crests'],
+          answer: 2,
+          explanation: 'Compressions are high-pressure regions where coils/particles are crowded closely together.'
+        },
+        {
+          id: 't3_q4', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'In a longitudinal wave, what are the stretched-out regions of lower pressure between compressions called?',
+          options: ['Rarefactions', 'Crests', 'Amplitudes', 'Reflections'],
+          answer: 0,
+          explanation: 'Rarefactions are the spread-out, low-pressure zones alternating between compressions in a longitudinal wave.'
+        },
+        {
+          id: 't3_q5', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'Which of the following is the BEST real-world example of a longitudinal wave?',
+          options: [
+            'Light from a flashlight',
+            'Sound waves from a beating drum traveling through air',
+            'Waves on a shaken jump rope',
+            'Radio waves broadcast from a tower'
+          ],
+          answer: 1,
+          explanation: 'Sound waves in air, water, and solids are classic longitudinal pressure waves made of compressions and rarefactions.'
+        },
+        {
+          id: 't3_q6', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'Which group contains ONLY transverse wave examples?',
+          options: [
+            'Sound waves, ultrasound, seismic P-waves',
+            'Shaken rope waves, light waves, vibrating guitar string',
+            'Pushed Slinky coils, thunderclaps, sonar pulses',
+            'Speech in air, seismic P-waves, plucked guitar string'
+          ],
+          answer: 1,
+          explanation: 'Shaken rope waves, light (electromagnetic) waves, and vibrating strings all oscillate perpendicular to wave direction (transverse).'
+        },
+        {
+          id: 't3_q7', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'If a wave travels from left to right across a classroom and causes a ribbon tied to a rope to move straight up and down, what type of wave is it?',
+          options: ['Longitudinal wave', 'Transverse wave', 'Sound compression wave', 'Static wave'],
+          answer: 1,
+          explanation: 'Up-and-down particle motion is perpendicular (90°) to left-to-right wave propagation, which defines a transverse wave.'
+        },
+        {
+          id: 't3_q8', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'How is one complete wavelength (λ) measured on a longitudinal Slinky wave?',
+          options: [
+            'From the center of one compression to the center of the very next compression',
+            'From a compression to the adjacent rarefaction',
+            'From the top crest to the bottom trough',
+            'By counting total coils in the Slinky'
+          ],
+          answer: 0,
+          explanation: 'One full cycle in a longitudinal wave spans from one compression to the next compression (or one rarefaction to the next rarefaction).'
+        },
+        {
+          id: 't3_q9', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'Why can transverse light waves from the Sun reach Earth through empty space, while longitudinal sound waves from solar explosions cannot?',
+          options: [
+            'Light travels slower than sound.',
+            'Electromagnetic transverse waves do not need a medium, whereas sound is a mechanical longitudinal wave requiring matter.',
+            'Space is filled with dense air that blocks longitudinal waves.',
+            'Sound waves have crests that are too tall for space.'
+          ],
+          answer: 1,
+          explanation: 'Sound is a mechanical longitudinal wave that needs particles (solid, liquid, or gas) to collide and pass energy; space is a near-vacuum.'
+        },
+        {
+          id: 't3_q10', topic: 't3', topicLabel: 'Longitudinal & Transverse',
+          question: 'During an earthquake, primary waves (P-waves) push and pull rock back and forth along the wave path, while secondary waves (S-waves) shake rock side-to-side. How are they classified?',
+          options: [
+            'P-waves are transverse; S-waves are longitudinal.',
+            'P-waves are longitudinal; S-waves are transverse.',
+            'Both P-waves and S-waves are electromagnetic.',
+            'Neither wave carries energy.'
+          ],
+          answer: 1,
+          explanation: 'P-waves compress and expand rock parallel to travel (longitudinal), whereas S-waves shear rock perpendicular to travel (transverse).'
+        }
+      ]
+    };
+
+    /* =========================================================================
+       2. PERSISTENT STATE & LOCALSTORAGE MANAGEMENT
+       ========================================================================= */
+
+    const STORAGE_KEY = 'scireview_machines_waves_v1';
+
+    let appState = {
+      activeTab: 0,
+      checklist: {},        // { c1: true, ... }
+      quizAnswers: {        // { t1_q1: 1, ... }
+        t1: {},
+        t2: {},
+        t3: {},
+        mock: {}
+      },
+      sorterAnswers: {},    // { ws1: 'longitudinal', ... }
+      envFilter: 'all',
+      mockFilter: 'all'
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = {
+            ...appState,
+            ...parsed,
+            quizAnswers: {
+              t1: {},
+              t2: {},
+              t3: {},
+              mock: {},
+              ...(parsed.quizAnswers || {})
+            }
+          };
+        }
+      } catch (e) {
+        console.warn('Could not load saved state:', e);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Could not save state:', e);
+      }
+    }
+
+    /* =========================================================================
+       3. UI NAVIGATION, TOASTS & CONFETTI CELEBRATION
+       ========================================================================= */
+
+    function showToast(message, iconClass = 'fa-circle-check text-emerald-400') {
+      const banner = document.getElementById('toastBanner');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+      icon.className = `fa-solid ${iconClass} text-lg`;
+      msg.textContent = message;
+      banner.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3200);
+    }
+
+    function switchTab(tabIndex) {
+      appState.activeTab = tabIndex;
+      saveState();
+
+      for (let i = 0; i <= 4; i++) {
+        const panel = document.getElementById(`panel-${i}`);
+        const btn = document.getElementById(`nav-tab-${i}`);
+        if (i === tabIndex) {
+          panel.classList.remove('hidden');
+          btn.className = 'nav-tab px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 bg-teal-600 text-white shadow-xs';
+        } else {
+          panel.classList.add('hidden');
+          btn.className = 'nav-tab px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+        }
+      }
+
+      // Resize canvases whenever a simulation tab becomes visible
+      requestAnimationFrame(() => {
+        if (tabIndex === 2) {
+          resizeRippleCanvas();
+          resizeWaveGraphCanvas();
+        } else if (tabIndex === 3) {
+          resizeSlinkyCanvas();
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleResetConfirm(show) {
+      const bar = document.getElementById('resetConfirmBar');
+      if (show) bar.classList.remove('hidden');
+      else bar.classList.add('hidden');
+    }
+
+    function executeProgressReset() {
+      appState.checklist = {};
+      appState.quizAnswers = { t1: {}, t2: {}, t3: {}, mock: {} };
+      appState.sorterAnswers = {};
+      saveState();
+      toggleResetConfirm(false);
+      renderChecklist();
+      renderAllQuizzes();
+      renderWaveSorter();
+      updateAllProgressUI();
+      showToast('All quiz scores and checklist progress have been reset.', 'fa-rotate-left text-amber-400');
+    }
+
+    /* Celebratory Confetti Engine (>= 80% Quiz Score) */
+    function launchConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#0d9488', '#059669', '#0284c7', '#f59e0b', '#ec4899', '#8b5cf6'];
+      const particles = Array.from({ length: 110 }, () => ({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * 140,
+        w: 6 + Math.random() * 6,
+        h: 8 + Math.random() * 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 4,
+        vy: 2.5 + Math.random() * 4.5,
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.15
+      }));
+
+      let frame = 0;
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.06;
+          p.rot += p.vrot;
+          if (p.y < canvas.height + 30) active = true;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+
+        frame++;
+        if (active && frame < 220) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      animateConfetti();
+    }
+
+    /* Discreet Custom Photo Upload via FileReader */
+    function handleCustomPhotoUpload(event, topicNum) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const slot = document.getElementById(`custom-photo-slot-${topicNum}`);
+        const img = document.getElementById(`custom-photo-img-${topicNum}`);
+        const svgBox = document.getElementById(`showcase-svg-${topicNum}`);
+        img.src = e.target.result;
+        slot.classList.remove('hidden');
+        if (svgBox) {
+          svgBox.classList.remove('lg:col-span-12');
+          svgBox.classList.add('lg:col-span-7');
+        }
+        showToast('Classroom photo attached to reviewer card!', 'fa-camera text-teal-400');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeCustomPhoto(topicNum) {
+      const slot = document.getElementById(`custom-photo-slot-${topicNum}`);
+      const img = document.getElementById(`custom-photo-img-${topicNum}`);
+      const svgBox = document.getElementById(`showcase-svg-${topicNum}`);
+      const input = document.getElementById(`upload-topic-${topicNum}`);
+      img.src = '';
+      input.value = '';
+      slot.classList.add('hidden');
+      if (svgBox) {
+        svgBox.classList.remove('lg:col-span-7');
+        svgBox.classList.add('lg:col-span-12');
+      }
+    }
+
+    /* =========================================================================
+       4. OVERVIEW CHECKLIST & MASTERY CALCULATIONS
+       ========================================================================= */
+
+    function renderChecklist() {
+      const container = document.getElementById('competencyChecklistContainer');
+      container.innerHTML = COMPETENCIES.map(c => {
+        const checked = !!appState.checklist[c.id];
+        return `
+          <label class="flex items-start gap-3 p-3.5 rounded-xl border ${checked ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50/70 border-slate-200 hover:border-teal-300'} cursor-pointer transition">
+            <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCompetency('${c.id}')" class="mt-1 w-4 h-4 rounded text-teal-600 focus:ring-teal-500 cursor-pointer" />
+            <div class="space-y-0.5">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider ${checked ? 'text-emerald-700' : 'text-teal-700'}">${c.module}</span>
+              <p class="text-xs font-medium text-slate-800 leading-relaxed ${checked ? 'line-through text-slate-500' : ''}">${c.text}</p>
+            </div>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function toggleCompetency(id) {
+      appState.checklist[id] = !appState.checklist[id];
+      saveState();
+      renderChecklist();
+      updateAllProgressUI();
+    }
+
+    function getTopicScore(topicKey) {
+      const questions = QUIZ_QUESTIONS[topicKey];
+      const userAns = appState.quizAnswers[topicKey] || {};
+      let correct = 0;
+      let answered = 0;
+      questions.forEach(q => {
+        if (userAns[q.id] !== undefined) {
+          answered++;
+          if (userAns[q.id] === q.answer) correct++;
+        }
+      });
+      return { correct, answered, total: questions.length };
+    }
+
+    function getMockScore() {
+      const allQs = [...QUIZ_QUESTIONS.t1, ...QUIZ_QUESTIONS.t2, ...QUIZ_QUESTIONS.t3];
+      const userAns = appState.quizAnswers.mock || {};
+      let correct = 0;
+      let answered = 0;
+      const sub = { t1: 0, t2: 0, t3: 0 };
+
+      allQs.forEach(q => {
+        if (userAns[q.id] !== undefined) {
+          answered++;
+          if (userAns[q.id] === q.answer) {
+            correct++;
+            sub[q.topic]++;
+          }
+        }
+      });
+      return { correct, answered, total: allQs.length, sub };
+    }
+
+    function updateAllProgressUI() {
+      const s1 = getTopicScore('t1');
+      const s2 = getTopicScore('t2');
+      const s3 = getTopicScore('t3');
+      const mock = getMockScore();
+
+      const totalTopicCorrect = s1.correct + s2.correct + s3.correct;
+      const checkedCount = Object.values(appState.checklist).filter(Boolean).length;
+
+      // Overall mastery blends 30 topic quiz items + 8 checklist items
+      const overallPct = Math.round(((totalTopicCorrect + checkedCount) / 38) * 100);
+
+      document.getElementById('headerMasteryPill').textContent = `${overallPct}% Mastery`;
+      document.getElementById('overviewProgressPercent').textContent = `${overallPct}%`;
+      const circumference = 201.06;
+      document.getElementById('overviewProgressCircle').style.strokeDashoffset = circumference - (overallPct / 100) * circumference;
+
+      document.getElementById('overviewStatsText').textContent = `${totalTopicCorrect} / 30 Topic Questions`;
+      document.getElementById('overviewChecklistText').textContent = `${checkedCount} / 8 Competencies Checked`;
+      document.getElementById('checklistProgressPill').textContent = `${checkedCount} of 8 Completed`;
+
+      // Dashboard topic badges & bars
+      document.getElementById('dash-badge-t1').textContent = `${s1.correct}/10 Quiz`;
+      document.getElementById('dash-bar-t1').style.width = `${(s1.correct / 10) * 100}%`;
+
+      document.getElementById('dash-badge-t2').textContent = `${s2.correct}/10 Quiz`;
+      document.getElementById('dash-bar-t2').style.width = `${(s2.correct / 10) * 100}%`;
+
+      document.getElementById('dash-badge-t3').textContent = `${s3.correct}/10 Quiz`;
+      document.getElementById('dash-bar-t3').style.width = `${(s3.correct / 10) * 100}%`;
+
+      document.getElementById('dash-badge-mock').textContent = `${mock.correct}/30 Exam`;
+      document.getElementById('dash-bar-mock').style.width = `${(mock.correct / 30) * 100}%`;
+
+      // Mock Exam Header & Certificate
+      const mockPct = Math.round((mock.correct / 30) * 100);
+      document.getElementById('mockExamScoreHero').textContent = `${mock.correct} / 30 (${mockPct}%)`;
+      document.getElementById('mockExamAnsweredHero').textContent = `${mock.answered} of 30 items answered`;
+
+      document.getElementById('mock-sub-t1').textContent = `${mock.sub.t1}/10`;
+      document.getElementById('mock-subbar-t1').style.width = `${(mock.sub.t1 / 10) * 100}%`;
+      document.getElementById('mock-sub-t2').textContent = `${mock.sub.t2}/10`;
+      document.getElementById('mock-subbar-t2').style.width = `${(mock.sub.t2 / 10) * 100}%`;
+      document.getElementById('mock-sub-t3').textContent = `${mock.sub.t3}/10`;
+      document.getElementById('mock-subbar-t3').style.width = `${(mock.sub.t3 / 10) * 100}%`;
+
+      const certCard = document.getElementById('mockCertificateCard');
+      if (mock.answered === 30 && mockPct >= 80) {
+        certCard.classList.remove('hidden');
+        document.getElementById('mockCertificateSummary').textContent =
+          `Score: ${mock.correct}/30 (${mockPct}%) — Simple Machines (${mock.sub.t1}/10), Water & Sound Waves (${mock.sub.t2}/10), Longitudinal & Transverse (${mock.sub.t3}/10).`;
+      } else {
+        certCard.classList.add('hidden');
+      }
+    }
+
+    /* =========================================================================
+       5. MODULE 1: SIMPLE MACHINES EXPLORER & LEVER FAIR TEST LAB
+       ========================================================================= */
+
+    function filterMachinesEnv(env) {
+      appState.envFilter = env;
+      document.querySelectorAll('.env-filter-btn').forEach(btn => {
+        if (btn.dataset.env === env) {
+          btn.className = 'env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-xs transition';
+        } else {
+          btn.className = 'env-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition';
+        }
+      });
+      renderSimpleMachinesGrid();
+    }
+
+    function renderSimpleMachinesGrid() {
+      const grid = document.getElementById('simpleMachinesGrid');
+      const env = appState.envFilter;
+
+      grid.innerHTML = SIMPLE_MACHINES_DATA.map(m => {
+        const showHome = env === 'all' || env === 'home';
+        const showSchool = env === 'all' || env === 'school';
+        const showComm = env === 'all' || env === 'community';
+
+        return `
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:shadow-md transition p-4 flex flex-col justify-between space-y-3">
+            <div class="space-y-2">
+              <div class="bg-white rounded-xl p-2 border border-slate-100">
+                ${m.svg}
+              </div>
+              <div>
+                <h3 class="font-extrabold text-base text-slate-900">${m.name}</h3>
+                <p class="text-[11px] font-semibold text-teal-700">${m.subtitle}</p>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">${m.functionDesc}</p>
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+              ${showHome ? `
+                <div class="flex items-start gap-2 ${env === 'home' ? 'bg-teal-50 p-2 rounded-lg border border-teal-200' : ''}">
+                  <span class="px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-bold text-[10px] shrink-0"><i class="fa-solid fa-house mr-1"></i>Home</span>
+                  <span class="text-slate-700">${m.envs.home}</span>
+                </div>` : ''}
+              ${showSchool ? `
+                <div class="flex items-start gap-2 ${env === 'school' ? 'bg-sky-50 p-2 rounded-lg border border-sky-200' : ''}">
+                  <span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 font-bold text-[10px] shrink-0"><i class="fa-solid fa-school mr-1"></i>School</span>
+                  <span class="text-slate-700">${m.envs.school}</span>
+                </div>` : ''}
+              ${showComm ? `
+                <div class="flex items-start gap-2 ${env === 'community' ? 'bg-amber-50 p-2 rounded-lg border border-amber-200' : ''}">
+                  <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] shrink-0"><i class="fa-solid fa-city mr-1"></i>Community</span>
+                  <span class="text-slate-700">${m.envs.community}</span>
+                </div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* Interactive Virtual Lever Fair Test Lab */
+    let leverTrials = [];
+
+    function updateLeverLab(tiltAngle = 0) {
+      const fulcrumCm = parseInt(document.getElementById('fulcrumSlider').value, 10);
+      const loadN = parseInt(document.getElementById('loadSlider').value, 10);
+
+      // Beam spans x = 60 (0 cm) to x = 500 (100 cm) -> 4.4 px per cm
+      const loadCm = 6;
+      const effortCm = 94;
+      const loadArmCm = Math.max(5, fulcrumCm - loadCm);
+      const effortArmCm = Math.max(5, effortCm - fulcrumCm);
+
+      const ma = effortArmCm / loadArmCm;
+      const effortN = loadN / ma;
+
+      document.getElementById('fulcrumPosVal').textContent = `${fulcrumCm} cm`;
+      document.getElementById('loadWeightVal').textContent = `${loadN} N`;
+      document.getElementById('calcEffortArm').textContent = `${effortArmCm} cm`;
+      document.getElementById('calcLoadArm').textContent = `Load Arm (dL): ${loadArmCm} cm`;
+      document.getElementById('calcMA').textContent = `${ma.toFixed(2)}×`;
+      document.getElementById('calcEffortForce').textContent = `${effortN.toFixed(1)} N`;
+
+      const findingTag = document.getElementById('leverFindingTag');
+      if (ma > 1.05) {
+        findingTag.textContent = `Force Multiplied! (${Math.round((1 - 1 / ma) * 100)}% less effort)`;
+        findingTag.className = 'px-2.5 py-1 rounded-lg bg-emerald-900/60 text-xs font-semibold text-emerald-300 border border-emerald-500/40';
+      } else if (ma < 0.95) {
+        findingTag.textContent = 'More Force Needed (Speed/Distance Gain)';
+        findingTag.className = 'px-2.5 py-1 rounded-lg bg-amber-900/60 text-xs font-semibold text-amber-300 border border-amber-500/40';
+      } else {
+        findingTag.textContent = 'Equal Force (1:1 Balance)';
+        findingTag.className = 'px-2.5 py-1 rounded-lg bg-slate-800 text-xs font-semibold text-teal-300 border border-slate-700';
+      }
+
+      // Update SVG Geometry
+      const fulcrumX = 60 + fulcrumCm * 4.4;
+      document.getElementById('leverFulcrumPoly').setAttribute('points', `${fulcrumX},145 ${fulcrumX - 18},215 ${fulcrumX + 18},215`);
+      const labelEl = document.getElementById('leverFulcrumLabel');
+      labelEl.setAttribute('x', fulcrumX);
+      labelEl.textContent = `Fulcrum (${fulcrumCm} cm)`;
+
+      document.getElementById('leverBeamGroup').setAttribute('transform', `rotate(${tiltAngle} ${fulcrumX} 145)`);
+      document.getElementById('leverLoadText').textContent = `${loadN} N`;
+      document.getElementById('leverEffortText').textContent = `Effort: ${effortN.toFixed(1)} N ↓`;
+      document.getElementById('leverArmsSummary').textContent =
+        `Load Arm: ${loadArmCm} cm  |  Effort Arm: ${effortArmCm} cm  |  MA = ${ma.toFixed(2)}×`;
+
+      return { fulcrumCm, loadN, loadArmCm, effortArmCm, ma, effortN };
+    }
+
+    function triggerLeverLift() {
+      const data = updateLeverLab(9);
+      setTimeout(() => updateLeverLab(0), 650);
+
+      leverTrials.unshift(data);
+      if (leverTrials.length > 6) leverTrials.pop();
+
+      const logEl = document.getElementById('leverTrialLog');
+      logEl.innerHTML = leverTrials.map((t, idx) => `
+        <div class="flex items-center justify-between bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+          <span><strong>Trial #${leverTrials.length - idx}:</strong> Fulcrum @ ${t.fulcrumCm}cm | Load ${t.loadN}N</span>
+          <span class="font-bold text-teal-700">Effort: ${t.effortN.toFixed(1)}N (MA ${t.ma.toFixed(2)}×)</span>
+        </div>
+      `).join('');
+    }
+
+    function clearLeverLog() {
+      leverTrials = [];
+      document.getElementById('leverTrialLog').innerHTML =
+        '<p class="italic text-slate-400">Click "Test Lift &amp; Log Trial" to record measurements.</p>';
+    }
+
+    /* =========================================================================
+       6. MODULE 2: 2D VIRTUAL RIPPLE TANK & SINE WAVE GRAPH SIMULATORS
+       ========================================================================= */
+
+    let rippleMode = 'open';
+    let rippleContinuous = false;
+    let rippleTick = 0;
+
+    // 2D Wave Equation Grid Buffers
+    const R_COLS = 150;
+    const R_ROWS = 84;
+    let rCurr = new Float32Array(R_COLS * R_ROWS);
+    let rPrev = new Float32Array(R_COLS * R_ROWS);
+
+    function resizeRippleCanvas() {
+      const canvas = document.getElementById('rippleTankCanvas');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      }
+    }
+
+    function disturbRipple(gx, gy, strength) {
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          const x = gx + dx;
+          const y = gy + dy;
+          if (x > 2 && x < R_COLS - 3 && y > 2 && y < R_ROWS - 3) {
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= 2.2) {
+              rPrev[y * R_COLS + x] += strength * Math.cos((dist / 2.2) * (Math.PI / 2));
+            }
+          }
+        }
+      }
+    }
+
+    function rippleDropCenter() {
+      const intensity = parseInt(document.getElementById('rippleIntensitySlider').value, 10);
+      const startX = rippleMode === 'open' ? Math.floor(R_COLS * 0.5) : Math.floor(R_COLS * 0.25);
+      disturbRipple(startX, Math.floor(R_ROWS * 0.5), intensity);
+    }
+
+    function toggleRippleContinuous() {
+      rippleContinuous = !rippleContinuous;
+      const btn = document.getElementById('rippleContinuousBtn');
+      if (rippleContinuous) {
+        btn.innerHTML = '<i class="fa-solid fa-stop"></i><span>Continuous Generator: ON</span>';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1.5';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-repeat"></i><span>Continuous Generator: OFF</span>';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs transition flex items-center gap-1.5';
+      }
+    }
+
+    function clearRippleTank() {
+      rCurr.fill(0);
+      rPrev.fill(0);
+    }
+
+    function setRippleMode(mode) {
+      rippleMode = mode;
+      clearRippleTank();
+      document.querySelectorAll('.ripple-mode-btn').forEach(btn => {
+        if (btn.dataset.rmode === mode) {
+          btn.className = 'ripple-mode-btn text-left px-3 py-2 rounded-lg text-xs font-bold bg-sky-600 text-white transition';
+        } else {
+          btn.className = 'ripple-mode-btn text-left px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 transition';
+        }
+      });
+
+      const badge = document.getElementById('rippleModeOverlayBadge');
+      if (mode === 'open') {
+        badge.textContent = 'Mode: Open Water Tank (Tap water to create crests & troughs)';
+      } else if (mode === 'wall') {
+        badge.textContent = 'Mode: Solid Wall Barrier (Observe waves reflecting back off the wall!)';
+      } else {
+        badge.textContent = 'Mode: Barrier Slit & Shallow Zone (Observe diffraction & refraction bending!)';
+      }
+      rippleDropCenter();
+    }
+
+    function updateRippleLabels() {
+      const inten = parseInt(document.getElementById('rippleIntensitySlider').value, 10);
+      const rate = parseInt(document.getElementById('rippleRateSlider').value, 10);
+      document.getElementById('rippleIntensityLabel').textContent = inten < 250 ? 'Gentle' : inten < 400 ? 'Medium' : 'High';
+      const rateNames = ['Very Slow', 'Slow', 'Normal', 'Fast', 'Rapid'];
+      document.getElementById('rippleRateLabel').textContent = rateNames[rate - 1];
+    }
+
+    function stepAndDrawRippleTank() {
+      const canvas = document.getElementById('rippleTankCanvas');
+      if (!canvas || appState.activeTab !== 2) return;
+      if (canvas.width === 0) resizeRippleCanvas();
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      rippleTick++;
+      const rate = parseInt(document.getElementById('rippleRateSlider').value, 10);
+      const interval = Math.max(8, 36 - rate * 6);
+      if (rippleContinuous && rippleTick % interval === 0) {
+        rippleDropCenter();
+      }
+
+      const wallX = Math.floor(R_COLS * 0.62);
+      const slitCenter = Math.floor(R_ROWS * 0.5);
+
+      // 2D Finite-Difference Wave Solver
+      const damping = 0.986;
+      for (let y = 1; y < R_ROWS - 1; y++) {
+        for (let x = 1; x < R_COLS - 1; x++) {
+          const idx = y * R_COLS + x;
+
+          // Wall reflection barrier
+          if (rippleMode === 'wall' && x >= wallX && x <= wallX + 2 && y > 10 && y < R_ROWS - 10) {
+            rCurr[idx] = 0;
+            continue;
+          }
+
+          // Slit diffraction barrier
+          if (rippleMode === 'bend' && x >= wallX && x <= wallX + 2 && Math.abs(y - slitCenter) > 7) {
+            rCurr[idx] = 0;
+            continue;
+          }
+
+          // Shallow water zone slows wave speed (causes refraction bending)
+          let c2 = 0.46;
+          if (rippleMode === 'bend' && x > wallX + 4 && y > slitCenter) {
+            c2 = 0.22;
+          }
+
+          const laplacian =
+            rPrev[idx - 1] +
+            rPrev[idx + 1] +
+            rPrev[idx - R_COLS] +
+            rPrev[idx + R_COLS] -
+            4 * rPrev[idx];
+
+          rCurr[idx] = (2 * rPrev[idx] - rCurr[idx] + c2 * laplacian) * damping;
+        }
+      }
+
+      // Swap buffers
+      const temp = rPrev;
+      rPrev = rCurr;
+      rCurr = temp;
+
+      // Render grid to canvas
+      const cellW = w / R_COLS;
+      const cellH = h / R_ROWS;
+
+      ctx.fillStyle = '#082f49';
+      ctx.fillRect(0, 0, w, h);
+
+      // Highlight shallow water zone in bend mode
+      if (rippleMode === 'bend') {
+        ctx.fillStyle = 'rgba(20, 184, 166, 0.16)';
+        ctx.fillRect((wallX + 4) * cellW, slitCenter * cellH, w - (wallX + 4) * cellW, h - slitCenter * cellH);
+        ctx.fillStyle = '#5eead4';
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText('Shallow Zone (Slower Speed → Bending)', (wallX + 8) * cellW, h - 10);
+      }
+
+      for (let y = 1; y < R_ROWS - 1; y++) {
+        for (let x = 1; x < R_COLS - 1; x++) {
+          const val = rPrev[y * R_COLS + x];
+          if (Math.abs(val) > 1.2) {
+            if (val > 0) {
+              // Crest (bright cyan-white)
+              const alpha = Math.min(0.95, val / 95);
+              ctx.fillStyle = `rgba(125, 211, 252, ${alpha})`;
+            } else {
+              // Trough (deep navy shadow)
+              const alpha = Math.min(0.9, -val / 95);
+              ctx.fillStyle = `rgba(2, 6, 23, ${alpha})`;
+            }
+            ctx.fillRect(x * cellW, y * cellH, cellW + 0.6, cellH + 0.6);
+          }
+        }
+      }
+
+      // Draw physical barriers
+      if (rippleMode === 'wall') {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(wallX * cellW, 10 * cellH, 3 * cellW, (R_ROWS - 20) * cellH);
+        ctx.fillStyle = '#fde68a';
+        ctx.font = '700 10px Inter, sans-serif';
+        ctx.fillText('Reflecting Wall', wallX * cellW - 25, 14);
+      } else if (rippleMode === 'bend') {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(wallX * cellW, 0, 3 * cellW, (slitCenter - 7) * cellH);
+        ctx.fillRect(wallX * cellW, (slitCenter + 7) * cellH, 3 * cellW, (R_ROWS - slitCenter - 7) * cellH);
+      }
+    }
+
+    /* Interactive Sine Wave Graph & Velocity Calculator */
+    let wavePhase = 0;
+
+    function resizeWaveGraphCanvas() {
+      const canvas = document.getElementById('waveGraphCanvas');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      }
+    }
+
+    function updateWaveCalc() {
+      const A = parseFloat(document.getElementById('waveAmpSlider').value);
+      const f = parseFloat(document.getElementById('waveFreqSlider').value);
+      const lambda = parseFloat(document.getElementById('waveLambdaSlider').value);
+
+      const v = f * lambda;
+      const T = 1 / f;
+
+      document.getElementById('waveAmpVal').textContent = `${A.toFixed(1)} m`;
+      document.getElementById('waveFreqVal').textContent = `${f} Hz`;
+      document.getElementById('waveLambdaVal').textContent = `${lambda} m`;
+      document.getElementById('waveVelocityResult').textContent = `${v.toFixed(1)} m/s`;
+      document.getElementById('waveFormulaStep').textContent = `v = ${f} Hz × ${lambda} m = ${v.toFixed(1)} m/s`;
+      document.getElementById('wavePeriodText').textContent = `Period T = ${T.toFixed(2)} s`;
+
+      const pitch = f <= 3 ? 'Low Pitch' : f <= 7 ? 'Medium Pitch' : 'High Pitch';
+      const loud = A <= 2 ? 'Soft Sound' : A <= 3.5 ? 'Moderate Loudness' : 'Loud Sound';
+      document.getElementById('soundPerceptionBadge').textContent = `${pitch} • ${loud}`;
+    }
+
+    function drawWaveGraph() {
+      const canvas = document.getElementById('waveGraphCanvas');
+      if (!canvas || appState.activeTab !== 2) return;
+      if (canvas.width === 0) resizeWaveGraphCanvas();
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const midY = h / 2;
+
+      const A = parseFloat(document.getElementById('waveAmpSlider').value);
+      const f = parseFloat(document.getElementById('waveFreqSlider').value);
+      const lambda = parseFloat(document.getElementById('waveLambdaSlider').value);
+
+      wavePhase += 0.025 * f;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Subtle grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let gx = 0; gx < w; gx += 40) {
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+      }
+
+      // Rest (Equilibrium) Line
+      ctx.strokeStyle = '#64748b';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(0, midY);
+      ctx.lineTo(w, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.fillText('Rest Line (Equilibrium)', 8, midY - 6);
+
+      // Wave Curve
+      const ampPx = A * 14;
+      const pxPerLambda = 36 + lambda * 16;
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x++) {
+        const angle = ((x / pxPerLambda) * Math.PI * 2) - wavePhase;
+        const y = midY - Math.sin(angle) * ampPx;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Dynamic Crest, Amplitude, and Wavelength Callouts
+      const firstCrestX = ((Math.PI / 2 + wavePhase) / (Math.PI * 2)) * pxPerLambda % pxPerLambda;
+      const c1 = firstCrestX < 35 ? firstCrestX + pxPerLambda : firstCrestX;
+      const c2 = c1 + pxPerLambda;
+
+      if (c1 < w - 20) {
+        const crestY = midY - ampPx;
+        // Amplitude vertical arrow
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(c1, midY);
+        ctx.lineTo(c1, crestY);
+        ctx.stroke();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath(); ctx.arc(c1, crestY, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '700 10px Inter, sans-serif';
+        ctx.fillText(`Crest (A=${A}m)`, c1 + 6, crestY + 4);
+
+        // Trough marker half-wavelength away
+        const troughX = c1 + pxPerLambda / 2;
+        if (troughX < w - 20) {
+          const troughY = midY + ampPx;
+          ctx.fillStyle = '#f472b6';
+          ctx.beginPath(); ctx.arc(troughX, troughY, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillText('Trough', troughX + 6, troughY + 4);
+        }
+
+        // Wavelength horizontal bracket if second crest fits
+        if (c2 < w - 10) {
+          const bracketY = Math.max(16, crestY - 14);
+          ctx.strokeStyle = '#34d399';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(c1, bracketY);
+          ctx.lineTo(c2, bracketY);
+          ctx.stroke();
+          ctx.fillStyle = '#34d399';
+          ctx.fillText(`λ = ${lambda} m`, (c1 + c2) / 2 - 18, bracketY - 4);
+        }
+      }
+    }
+
+    /* =========================================================================
+       7. MODULE 3: DUAL SLINKY/ROPE SIMULATOR & QUICK WAVE SORTER
+       ========================================================================= */
+
+    let slinkyMode = 'both';
+    let slinkyPlaying = true;
+    let slinkyTime = 0;
+
+    function resizeSlinkyCanvas() {
+      const canvas = document.getElementById('slinkySimCanvas');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width = Math.floor(rect.width);
+        canvas.height = Math.floor(rect.height);
+      }
+    }
+
+    function setSlinkyMode(mode) {
+      slinkyMode = mode;
+      document.querySelectorAll('.slinky-mode-btn').forEach(btn => {
+        if (btn.dataset.smode === mode) {
+          btn.className = 'slinky-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition';
+        } else {
+          btn.className = 'slinky-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-emerald-50 transition';
+        }
+      });
+    }
+
+    function toggleSlinkyPlay() {
+      slinkyPlaying = !slinkyPlaying;
+      const btn = document.getElementById('slinkyPlayPauseBtn');
+      btn.innerHTML = slinkyPlaying
+        ? '<i class="fa-solid fa-pause"></i><span>Pause</span>'
+        : '<i class="fa-solid fa-play"></i><span>Play</span>';
+    }
+
+    function drawSlinkySimulator() {
+      const canvas = document.getElementById('slinkySimCanvas');
+      if (!canvas || appState.activeTab !== 3) return;
+      if (canvas.width === 0) resizeSlinkyCanvas();
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const speed = parseInt(document.getElementById('slinkySpeedSlider').value, 10);
+      if (slinkyPlaying) {
+        slinkyTime += 0.03 * speed;
+      }
+
+      ctx.clearRect(0, 0, w, h);
+
+      const drawTransverse = (centerY, amp) => {
+        // Header & Energy Direction Arrow
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '700 12px Inter, sans-serif';
+        ctx.fillText('TRANSVERSE WAVE (Shaken Rope): Particles move UP & DOWN (⊥)', 16, centerY - amp - 24);
+
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(16, centerY - amp - 12);
+        ctx.lineTo(185, centerY - amp - 12);
+        ctx.lineTo(178, centerY - amp - 16);
+        ctx.moveTo(185, centerY - amp - 12);
+        ctx.lineTo(178, centerY - amp - 8);
+        ctx.stroke();
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText('Wave Energy Direction →', 194, centerY - amp - 9);
+
+        // Rest Line
+        ctx.strokeStyle = '#334155';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(24, centerY); ctx.lineTo(w - 24, centerY); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Rope Beads
+        const numBeads = 46;
+        const startX = 32;
+        const spanX = w - 64;
+        const trackedIdx = 16;
+
+        ctx.strokeStyle = '#7dd3fc';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i <= numBeads; i++) {
+          const x = startX + (i / numBeads) * spanX;
+          const phase = (i / numBeads) * Math.PI * 4 - slinkyTime;
+          const y = centerY - Math.sin(phase) * amp;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Draw Beads & Highlight Tracked Amber Bead
+        for (let i = 0; i <= numBeads; i += 2) {
+          const x = startX + (i / numBeads) * spanX;
+          const phase = (i / numBeads) * Math.PI * 4 - slinkyTime;
+          const y = centerY - Math.sin(phase) * amp;
+
+          if (i === trackedIdx) {
+            // Vertical motion guide
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x, centerY - amp - 6); ctx.lineTo(x, centerY + amp + 6); ctx.stroke();
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#fef3c7'; ctx.lineWidth = 2; ctx.stroke();
+
+            ctx.fillStyle = '#fde68a';
+            ctx.font = '700 10px Inter, sans-serif';
+            ctx.fillText('↕ Particle (⊥)', x + 10, y + 3);
+          } else {
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        // Crest & Trough Labels
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText('Peak = Crest  |  Valley = Trough', w - 185, centerY + amp + 18);
+      };
+
+      const drawLongitudinal = (centerY, coilHeight) => {
+        ctx.fillStyle = '#34d399';
+        ctx.font = '700 12px Inter, sans-serif';
+        ctx.fillText('LONGITUDINAL WAVE (Slinky): Coils move BACK & FORTH (∥)', 16, centerY - coilHeight - 24);
+
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(16, centerY - coilHeight - 12);
+        ctx.lineTo(185, centerY - coilHeight - 12);
+        ctx.lineTo(178, centerY - coilHeight - 16);
+        ctx.moveTo(185, centerY - coilHeight - 12);
+        ctx.lineTo(178, centerY - coilHeight - 8);
+        ctx.stroke();
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText('Wave Energy Direction →', 194, centerY - coilHeight - 9);
+
+        const numCoils = 44;
+        const startX = 36;
+        const spanX = w - 72;
+        const trackedCoil = 18;
+
+        for (let i = 0; i <= numCoils; i++) {
+          const baseX = startX + (i / numCoils) * spanX;
+          const phase = (i / numCoils) * Math.PI * 4 - slinkyTime;
+          const dispX = Math.sin(phase) * 14;
+          const x = baseX + dispX;
+
+          // Derivative cos(phase) tells us compression vs rarefaction
+          const density = Math.cos(phase);
+
+          if (i === trackedCoil) {
+            // Horizontal oscillation bracket
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(baseX - 16, centerY + coilHeight + 8); ctx.lineTo(baseX + 16, centerY + coilHeight + 8); ctx.stroke();
+
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.ellipse(x, centerY, 6, coilHeight, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#fde68a';
+            ctx.font = '700 10px Inter, sans-serif';
+            ctx.fillText('↔ Coil (∥)', x - 22, centerY + coilHeight + 20);
+          } else {
+            ctx.strokeStyle = density < -0.35 ? '#fbbf24' : density > 0.35 ? '#38bdf8' : '#10b981';
+            ctx.lineWidth = density < -0.35 ? 2.6 : 1.8;
+            ctx.beginPath();
+            ctx.ellipse(x, centerY, 5, coilHeight, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText('Crowded (Amber) = Compression  |  Spread-out (Blue) = Rarefaction', w - 335, centerY + coilHeight + 20);
+      };
+
+      if (slinkyMode === 'both') {
+        drawTransverse(h * 0.28, 28);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, h * 0.52); ctx.lineTo(w, h * 0.52); ctx.stroke();
+        drawLongitudinal(h * 0.77, 22);
+      } else if (slinkyMode === 'transverse') {
+        drawTransverse(h * 0.54, 48);
+      } else {
+        drawLongitudinal(h * 0.54, 38);
+      }
+    }
+
+    /* Interactive Quick Wave Sorter Mini-Game */
+    function renderWaveSorter() {
+      const grid = document.getElementById('waveSorterGrid');
+      let correctCount = 0;
+
+      grid.innerHTML = WAVE_SORTER_ITEMS.map(item => {
+        const chosen = appState.sorterAnswers[item.id];
+        const isCorrect = chosen === item.type;
+        if (isCorrect) correctCount++;
+
+        let cardBorder = 'border-slate-200 bg-slate-50/70';
+        if (chosen) {
+          cardBorder = isCorrect ? 'border-emerald-400 bg-emerald-50/70' : 'border-rose-400 bg-rose-50/70';
+        }
+
+        return `
+          <div class="rounded-xl border ${cardBorder} p-3.5 flex flex-col justify-between space-y-3 transition">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Example</span>
+                ${chosen ? (
+                  isCorrect
+                    ? '<span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold"><i class="fa-solid fa-check mr-1"></i>Correct!</span>'
+                    : '<span class="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"><i class="fa-solid fa-xmark mr-1"></i>Try Again</span>'
+                ) : ''}
+              </div>
+              <p class="text-xs font-bold text-slate-900 leading-snug">${item.title}</p>
+              ${chosen ? `<p class="text-[11px] text-slate-600 leading-relaxed pt-1">${item.hint}</p>` : ''}
+            </div>
+
+            <div class="grid grid-cols-2 gap-1.5 pt-1">
+              <button onclick="answerWaveSorter('${item.id}', 'transverse')" class="py-1.5 px-2 rounded-lg text-[11px] font-bold transition ${chosen === 'transverse' ? (item.type === 'transverse' ? 'bg-sky-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border border-slate-200 text-slate-700 hover:bg-sky-50'}">
+                Transverse
+              </button>
+              <button onclick="answerWaveSorter('${item.id}', 'longitudinal')" class="py-1.5 px-2 rounded-lg text-[11px] font-bold transition ${chosen === 'longitudinal' ? (item.type === 'longitudinal' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50'}">
+                Longitudinal
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sorterScorePill').textContent = `Sorted: ${correctCount} / ${WAVE_SORTER_ITEMS.length}`;
+    }
+
+    function answerWaveSorter(itemId, choice) {
+      appState.sorterAnswers[itemId] = choice;
+      saveState();
+      renderWaveSorter();
+    }
+
+    function resetWaveSorter() {
+      appState.sorterAnswers = {};
+      saveState();
+      renderWaveSorter();
+    }
+
+    /* =========================================================================
+       8. QUIZ ENGINE (TOPICS 1, 2, 3 & FINAL 30-ITEM MOCK EXAM)
+       ========================================================================= */
+
+    function renderQuizSection(quizKey, containerId, title, subtitle) {
+      const container = document.getElementById(containerId);
+      let questions = quizKey === 'mock'
+        ? [...QUIZ_QUESTIONS.t1, ...QUIZ_QUESTIONS.t2, ...QUIZ_QUESTIONS.t3]
+        : QUIZ_QUESTIONS[quizKey];
+
+      if (quizKey === 'mock' && appState.mockFilter !== 'all') {
+        questions = questions.filter(q => q.topic === appState.mockFilter);
+      }
+
+      const userAnswers = appState.quizAnswers[quizKey] || {};
+      const scoreObj = quizKey === 'mock' ? getMockScore() : getTopicScore(quizKey);
+      const pct = Math.round((scoreObj.correct / scoreObj.total) * 100);
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Self-Check Assessment</span>
+              <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">${title}</h2>
+              <p class="text-xs sm:text-sm text-slate-600">${subtitle}</p>
+            </div>
+            <div class="flex items-center gap-2.5 self-start sm:self-auto">
+              <div class="px-3.5 py-2 rounded-xl ${pct >= 80 && scoreObj.answered === scoreObj.total ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white'} text-xs font-extrabold">
+                Score: ${scoreObj.correct} / ${scoreObj.total} (${pct}%)
+              </div>
+              <button onclick="resetSingleQuiz('${quizKey}')" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                <i class="fa-solid fa-rotate-right mr-1"></i>Retry
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${questions.map((q, index) => {
+              const selected = userAnswers[q.id];
+              const isAnswered = selected !== undefined;
+              const isCorrect = selected === q.answer;
+
+              return `
+                <div class="rounded-2xl border ${isAnswered ? (isCorrect ? 'border-emerald-300 bg-emerald-50/30' : 'border-rose-300 bg-rose-50/30') : 'border-slate-200 bg-slate-50/40'} p-4 sm:p-5 space-y-3 transition">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="space-y-1">
+                      ${quizKey === 'mock' ? `<span class="inline-block px-2 py-0.5 rounded bg-slate-200/80 text-slate-700 text-[10px] font-bold uppercase">${q.topicLabel}</span>` : ''}
+                      <p class="text-sm font-bold text-slate-900 leading-snug">
+                        <span class="text-teal-700 mr-1">${index + 1}.</span>${q.question}
+                      </p>
+                    </div>
+                    ${isAnswered ? (
+                      isCorrect
+                        ? '<span class="shrink-0 w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>'
+                        : '<span class="shrink-0 w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></span>'
+                    ) : ''}
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    ${q.options.map((opt, optIdx) => {
+                      let btnClass = 'bg-white border-slate-200 text-slate-800 hover:border-teal-400 hover:bg-teal-50/40';
+                      let badgeLetter = String.fromCharCode(65 + optIdx);
+
+                      if (isAnswered) {
+                        if (optIdx === q.answer) {
+                          btnClass = 'bg-emerald-600 border-emerald-600 text-white font-bold shadow-2xs';
+                        } else if (optIdx === selected && selected !== q.answer) {
+                          btnClass = 'bg-rose-600 border-rose-600 text-white font-semibold';
+                        } else {
+                          btnClass = 'bg-white/60 border-slate-200 text-slate-400';
+                        }
+                      }
+
+                      return `
+                        <button onclick="selectQuizOption('${quizKey}', '${q.id}', ${optIdx})" class="text-left p-3 rounded-xl border text-xs sm:text-sm transition flex items-start gap-2.5 ${btnClass}">
+                          <span class="w-5 h-5 rounded-md bg-black/10 flex items-center justify-center text-[11px] font-extrabold shrink-0 mt-0.5">${badgeLetter}</span>
+                          <span class="leading-snug">${opt}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+
+                  ${isAnswered ? `
+                    <div class="rounded-xl p-3 text-xs ${isCorrect ? 'bg-emerald-100/80 text-emerald-950 border border-emerald-200' : 'bg-amber-50 text-slate-800 border border-amber-200'} flex items-start gap-2">
+                      <i class="fa-solid fa-circle-info mt-0.5 ${isCorrect ? 'text-emerald-700' : 'text-amber-600'}"></i>
+                      <div>
+                        <span class="font-extrabold">${isCorrect ? 'Correct!' : 'Explanation:'}</span> ${q.explanation}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function selectQuizOption(quizKey, questionId, optionIdx) {
+      if (!appState.quizAnswers[quizKey]) appState.quizAnswers[quizKey] = {};
+      const wasAlreadyComplete = (quizKey === 'mock' ? getMockScore() : getTopicScore(quizKey)).answered ===
+                                 (quizKey === 'mock' ? 30 : 10);
+
+      appState.quizAnswers[quizKey][questionId] = optionIdx;
+      saveState();
+      renderAllQuizzes();
+      updateAllProgressUI();
+
+      // Check if learner just completed the quiz with >= 80%
+      const scoreObj = quizKey === 'mock' ? getMockScore() : getTopicScore(quizKey);
+      const pct = Math.round((scoreObj.correct / scoreObj.total) * 100);
+      if (!wasAlreadyComplete && scoreObj.answered === scoreObj.total && pct >= 80) {
+        launchConfetti();
+        showToast(`Awesome job! You scored ${scoreObj.correct}/${scoreObj.total} (${pct}%)!`, 'fa-trophy text-amber-400');
+      }
+    }
+
+    function resetSingleQuiz(quizKey) {
+      appState.quizAnswers[quizKey] = {};
+      saveState();
+      renderAllQuizzes();
+      updateAllProgressUI();
+      showToast('Quiz cleared. Ready for a fresh attempt!', 'fa-rotate-right text-sky-400');
+    }
+
+    function resetMockExam() {
+      resetSingleQuiz('mock');
+    }
+
+    function setMockFilter(filter) {
+      appState.mockFilter = filter;
+      document.querySelectorAll('.mock-filter-btn').forEach(btn => {
+        if (btn.dataset.mfilter === filter) {
+          btn.className = 'mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white transition';
+        } else {
+          btn.className = 'mock-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-teal-50 transition';
+        }
+      });
+      renderAllQuizzes();
+    }
+
+    function renderAllQuizzes() {
+      renderQuizSection('t1', 'quiz-container-t1', 'Section 1D: Simple Machines Quiz (10 Items)', 'Test your understanding of real-world simple machines, advantages/limitations, and lever fair tests.');
+      renderQuizSection('t2', 'quiz-container-t2', 'Section 2D: Properties of Water & Sound Waves Quiz (10 Items)', 'Test your mastery of energy transfer, ripple tank behavior, and wave calculations (v = f × λ).');
+      renderQuizSection('t3', 'quiz-container-t3', 'Section 3D: Longitudinal & Transverse Waves Quiz (10 Items)', 'Check your mastery of similarities, differences, and real-world wave classification.');
+      renderQuizSection('mock', 'quiz-container-mock', 'Combined 30-Item Mock Examination', 'Answer all 30 items across all three DepEd Science modules.');
+    }
+
+    /* =========================================================================
+       9. MAIN ANIMATION LOOP & WINDOW INITIALIZATION
+       ========================================================================= */
+
+    function mainAnimationLoop() {
+      stepAndDrawRippleTank();
+      drawWaveGraph();
+      drawSlinkySimulator();
+      requestAnimationFrame(mainAnimationLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeRippleCanvas();
+      resizeWaveGraphCanvas();
+      resizeSlinkyCanvas();
+    });
+
+    window.onload = function () {
+      loadState();
+      renderChecklist();
+      renderSimpleMachinesGrid();
+      updateLeverLab(0);
+      renderWaveSorter();
+      renderAllQuizzes();
+      updateAllProgressUI();
+
+      // Ripple Tank Tap-to-Drop Interaction
+      const rippleCanvas = document.getElementById('rippleTankCanvas');
+      if (rippleCanvas) {
+        rippleCanvas.addEventListener('pointerdown', (e) => {
+          const rect = rippleCanvas.getBoundingClientRect();
+          const gx = Math.floor(((e.clientX - rect.left) / rect.width) * R_COLS);
+          const gy = Math.floor(((e.clientY - rect.top) / rect.height) * R_ROWS);
+          const intensity = parseInt(document.getElementById('rippleIntensitySlider').value, 10);
+          disturbRipple(gx, gy, intensity);
+        });
+      }
+
+      updateRippleLabels();
+      updateWaveCalc();
+      switchTab(appState.activeTab || 0);
+
+      // Trigger an initial gentle ripple so the tank is alive when visited
+      rippleDropCenter();
+      mainAnimationLoop();
+    };
+  </script>
+</body>
+</html>
